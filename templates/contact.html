@@ -26,6 +26,8 @@
 		<header class="container">
 			<div class="row">
 				<h1 class="col-sm-6">CampusBites</h1>
+
+				<!-- NAVIGATION BAR -->
 				<nav class="col-sm-6 text-right">
 					<a class="nav-link" href="{{ url_for('profile', user_id=user.id)}}">Profile</a>
 					<a class="nav-link" href="{{ url_for('calendar', user_id=user.id)}}">Calendar</a>
@@ -60,6 +62,7 @@
 						</div>
 						
 						<!-- Submit button -->
+						<!-- TODO: CURRENTLY FORM CONTENT GOES NOWHERE-->
 						<button type="submit" class="btn btn-primary w-100">Submit</button>
 					</form>
 				</div>

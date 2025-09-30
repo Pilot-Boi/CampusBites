@@ -89,7 +89,6 @@ def calendar(user_id):
 def about():
         return render_template('about.html')
 
-
 # LOGOUT
 @app.route('/logout')
 @login_required
