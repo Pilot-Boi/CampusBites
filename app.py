@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True)
     email = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(64))
+    can_create_events = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -75,19 +76,28 @@ def events():
 @app.route('/contact')
 @login_required
 def contact():
-        return render_template('contact.html')
+    return render_template('contact.html')
 
 # CALENDAR PAGE
 @app.route('/calendar/<int:user_id>')
 @login_required
 def calendar(user_id):
-        return render_template('calendar.html', user=current_user)
+    return render_template('calendar.html', user=current_user)
+
+# CREATE EVENT PAGE
+@app.route('/create_event/<int:user_id>')
+@login_required
+def create_event(user_id):
+    if not current_user.can_create_events:
+        flash("You do not have permission to create events.")
+        return redirect(url_for('profile', user_id=current_user.id))
+    return render_template('create_event.html', user=current_user)
 
 # ABOUT PAGE
 @app.route('/about')
 @login_required
 def about():
-        return render_template('about.html')
+    return render_template('about.html')
 
 # LOGOUT
 @app.route('/logout')
