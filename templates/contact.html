@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!-- 
+	Software Engineering Project
+	Basma Chandour, Jason Diab, Emily DUgan, Michael Yin
+	
+	CampusBites contact page
+-->
+<html lang="en">
+	<head>
+		<title>CampusBites</title>
+		<meta charset="utf-8" />
+		<link
+			rel="stylesheet"
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+			crossorigin="anonymous"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
+			rel="stylesheet"
+			type="text/css"
+		/>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+	</head>
+	<body>
+		<header class="container">
+			<div class="row">
+				<h1 class="col-sm-6">CampusBites</h1>
+				<nav class="col-sm-6 text-right">
+					<a class="nav-link" href="{{ url_for('profile', user_id=user.id)}}">Profile</a>
+					<a class="nav-link" href="{{ url_for('calendar', user_id=user.id)}}">Calendar</a>
+					<a class="nav-link" href="{{ url_for('events') }}">Events</a>
+					<a class="nav-link" href="{{ url_for('about') }}">About</a>
+					<a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
+					<a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a>
+				</nav>
+			</div>
+		</header>
+		<section class="container">
+			<div class="row justify-content-center">
+				<div class="col-sm-6">
+					<form action="/submit-form" method="post">
+						<!-- Name input -->
+						<div class="mb-3">
+							<label for="name" class="form-label">Name</label>
+							<input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+						</div>
+						
+						<!-- Email input -->
+						<div class="mb-3">
+							<label for="email" class="form-label">Email</label>
+							<input type="email" class="form-control" id="email" name="email" placeholder="email@example.com" required>
+						</div>
+						
+						
+						<!-- Message text -->
+						<div class="mb-3">
+							<label for="message" class="form-label">Message</label>
+							<textarea class="form-control" id="message" name="message" rows="4" placeholder="Message..." required></textarea>
+						</div>
+						
+						<!-- Submit button -->
+						<button type="submit" class="btn btn-primary w-100">Submit</button>
+					</form>
+				</div>
+			</div>
+		</section>
+		<footer class="container">
+			<div class="row">
+				<p class="col-sm-4">&copy; 2025 CampusBites</p>
+			</div>
+		</footer>
