@@ -1,8 +1,7 @@
 import flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask import request, render_template, redirect, flash, session, Flask, url_for
-from datetime import datetime
+from flask import request, render_template, redirect, flash, Flask, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
