@@ -5,6 +5,7 @@
     
     CampusBites registration page
 -->
+    {% load static %}
     <html>
     <head>
         <title>CampusBites</title>
@@ -20,29 +21,20 @@
             rel="stylesheet"
             type="text/css"
         />
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
     </head>
-    <body>
+    <body data-redirect-if-authenticated="true" data-redirect-auth-target="{% url 'web-events' %}">
         <div class="container mt-5">
             <h1 class="text-center">Welcome to CampusBites</h1>
             <p class="text-center">Your one-stop solution for campus dining!</p>
 
-            <!-- ERROR MESSAGES -->
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="alert alert-danger">
-                  {% for message in messages %}
-                    <p>{{ message }}</p>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
-            
+            <div data-register-alerts></div>
+
             <!-- REGISTRATION FORM -->
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <h2>Register</h2>
-                    <form action="/register" method="POST">
+                    <form data-register-form data-redirect-success="{% url 'web-login' %}">
                         <div class="form-group">
                             <label>Username:</label>
                             <input type="text" name="username" class="form-control" required>
@@ -57,9 +49,10 @@
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Register</button>
                     </form>
-                    <p class="mt-3">Already have an account? <a href="/login">Login here</a></p>
+                    <p class="mt-3">Already have an account? <a href="{% url 'web-login' %}">Login here</a></p>
                 </div>
             </div>
         </div>
+        <script src="{% static 'app.js' %}"></script>
     </body>
 </html>
