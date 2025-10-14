@@ -16,6 +16,7 @@ from .frontend_views import (
     about_page,
     calendar_page,
     contact_page,
+    create_event_page,
     events_page,
     login_page,
     profile_page,
@@ -34,6 +35,7 @@ router.register(r"signup", SignupViewSet, basename="signup")
 
 urlpatterns = [
     path("", events_page, name="web-events"),
+    path("create/", create_event_page, name="web-create-event"),
     path("login/", login_page, name="web-login"),
     path("register/", register_page, name="web-register"),
     path("about/", about_page, name="web-about"),

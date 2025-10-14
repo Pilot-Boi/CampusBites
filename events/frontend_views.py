@@ -12,6 +12,8 @@ def register_page(request):
 def events_page(request):
     return render(request, "events.html")
 
+def create_event_page(request):
+    return render(request, "create_event.html")
 
 def calendar_page(request):
     return render(request, "calendar.html")
