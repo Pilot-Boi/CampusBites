@@ -126,7 +126,16 @@ class EventSerializer(serializers.ModelSerializer):
             "maybe_count",
             "not_going_count",
         ]
-
+    read_only_fields = [
+            "latitude",
+            "longitude",
+            "map_link",
+            "created_by",
+            "updated_at",
+            "going_count",
+            "maybe_count",
+            "not_going_count",
+        ]
     def create(self, validated_data):
         user = self.context["request"].user
         if not getattr(user.profile, "is_organizer", False):
