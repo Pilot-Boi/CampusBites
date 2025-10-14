@@ -1,79 +1,107 @@
 <!DOCTYPE html>
-<!-- 
-	Software Engineering Project
-	Basma Chandour, Jason Diab, Emily Dugan, Michael Yin
-	
-	CampusBites profile page
+<!--
+        Software Engineering Project
+        Basma Chandour, Jason Diab, Emily Dugan, Michael Yin
+
+        CampusBites profile page
 -->
 
+{% load static %}
 <html lang="en">
-	<head>
-		<title>CampusBites</title>
-		<meta charset="utf-8" />
-		<link
-			rel="stylesheet"
-			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-			crossorigin="anonymous"
-		/>
-		<link
-			href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
-			rel="stylesheet"
-			type="text/css"
-		/>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-	</head>
-	<body>
-		<header class="container">
-			<div class="row">
-				<h1 class="col-sm-6">CampusBites</h1>
-				<!-- NAVIGATION BAR -->
-				<nav class="col-sm-6 text-right">
-					<a class="nav-link" href="{{ url_for('profile', user_id=user.id)}}">Profile</a>
-					<a class="nav-link" href="{{ url_for('calendar', user_id=user.id)}}">Calendar</a>
-					<a class="nav-link" href="{{ url_for('events') }}">Events</a>
-					<a class="nav-link" href="{{ url_for('about') }}">About</a>
-					<a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
-					<a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a>
-				</nav>
-			</div>
-		</header>
-		<section class="bg-light py-3">
-    		<div class="container-fluid mt-4">
-  				<div class="row">
-    				<!-- Sidebar -->
-   					<nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar shadow-sm rounded p-3">
-   						<h4 class="mb-4">Welcome, {{ user.username }}!</h4>
-   						<ul class="nav flex-column nav-pills">
-       						{% for item in ['Settings', 'Friends', 'Messages', 'Notifications'] %}
-    							<li class="nav-item">
-        							<a class="nav-link" href="#">{{ item }}</a>
-    							</li>
-							{% endfor %}
-   						</ul>
-   						<div class="mt-4">
-   						    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-block w-100">Logout</a>
-   						</div>
-   					</nav>
+        <head>
+                <title>CampusBites</title>
+                <meta charset="utf-8" />
+                <link
+                        rel="stylesheet"
+                        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+                        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+                        crossorigin="anonymous"
+                />
+                <link
+                        href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
+                        rel="stylesheet"
+                        type="text/css"
+                />
+                <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+        </head>
+        <body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+                <header class="container">
+                        <div class="row">
+                                <h1 class="col-sm-6">CampusBites</h1>
+                                <!-- NAVIGATION BAR -->
+                                <nav class="col-sm-6 text-right">
+                                        <div data-nav-guest>
+                                                <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                        </div>
+                                        <div class="d-none" data-nav-auth>
+                                                <span class="nav-link d-inline font-weight-bold" data-nav-username></span>
+                                                <a class="nav-link d-inline" href="{% url 'web-profile' %}">Profile</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                                <button type="button" class="btn btn-link nav-link d-inline text-danger p-0 align-baseline" data-logout-button data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                                        </div>
+                                </nav>
+                        </div>
+                </header>
+                <section class="bg-light py-3">
+                        <div class="container-fluid mt-4">
+                                <div class="row">
+                                        <!-- Sidebar -->
+                                        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar shadow-sm rounded p-3">
+                                                <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
+                                                <ul class="nav flex-column nav-pills">
+                                                        <li class="nav-item">
+                                                                <span class="nav-link active">Overview</span>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                                <span class="nav-link disabled">Settings (coming soon)</span>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                                <span class="nav-link disabled">Friends (coming soon)</span>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                                <span class="nav-link disabled">Messages (coming soon)</span>
+                                                        </li>
+                                                </ul>
+                                                <div class="mt-4">
+                                                        <button type="button" class="btn btn-outline-danger btn-block w-100" data-logout-button data-logout-redirect="{% url 'web-login' %}">Log out</button>
+                                                </div>
+                                        </nav>
 
-					<!-- Main Content -->
-   					<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-   						<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-       						<h2>Your Profile</h2>
-   						</div>
-
-						<!-- Example content -->
-   						<div class="card shadow-sm rounded-3 p-4">
-       						<p class="text-muted">This is where your profile content, settings, or dashboard widgets would appear.</p>
-						</div>
-   					</main>
-  				</div>
-			</div>
-		</section>
-		<footer class="container">
-			<div class="row">
-				<p class="col-sm-4">&copy; 2025 CampusBites</p>
-			</div>
-		</footer>
-	</body>
+                                        <!-- Main Content -->
+                                        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                                                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                                                        <h2>Your Profile</h2>
+                                                </div>
+                                                <div data-profile-alerts></div>
+                                                <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                        <h5 class="mb-3">Account Details</h5>
+                                                        <dl class="row mb-0">
+                                                                <dt class="col-sm-4">Username</dt>
+                                                                <dd class="col-sm-8" data-profile-username></dd>
+                                                                <dt class="col-sm-4">Email</dt>
+                                                                <dd class="col-sm-8" data-profile-email>Not provided</dd>
+                                                                <dt class="col-sm-4">Role</dt>
+                                                                <dd class="col-sm-8" data-profile-role>Guest</dd>
+                                                        </dl>
+                                                </div>
+                                                <div class="card shadow-sm rounded-3 p-4">
+                                                        <p class="text-muted">This is where your profile content, settings, or dashboard widgets would appear.</p>
+                                                </div>
+                                        </main>
+                                </div>
+                        </div>
+                </section>
+                <footer class="container">
+                        <div class="row">
+                                <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                        </div>
+                </footer>
+                <script src="{% static 'app.js' %}"></script>
+        </body>
 </html>

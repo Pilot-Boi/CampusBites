@@ -5,9 +5,10 @@
 	
 	CampusBites events page
 -->
+{% load static %}
 <html lang="en">
-	<head>
-		<title>CampusBites</title>
+        <head>
+                <title>CampusBites</title>
 		<meta charset="utf-8" />
 		<link
 			rel="stylesheet"
@@ -20,33 +21,49 @@
 			rel="stylesheet"
 			type="text/css"
 		/>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-	</head>
-	<body>
-		<header class="container">
-			<div class="row">
-				<h1 class="col-sm-6">CampusBites</h1>
-				<!-- NAVIGATION BAR -->
-				<nav class="col-sm-6 text-right">
-					<a class="nav-link" href="{{ url_for('profile', user_id=user.id)}}">Profile</a>
-					<a class="nav-link" href="{{ url_for('calendar', user_id=user.id)}}">Calendar</a>
-					<a class="nav-link" href="{{ url_for('events') }}">Events</a>
-					<a class="nav-link" href="{{ url_for('about') }}">About</a>
-					<a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
-					<a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a>
-				</nav>
+                <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+        </head>
+        <body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+                <header class="container">
+                        <div class="row">
+                                <h1 class="col-sm-6">CampusBites</h1>
+                                <!-- NAVIGATION BAR -->
+                                <nav class="col-sm-6 text-right">
+                                        <div data-nav-guest>
+                                                <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                        </div>
+                                        <div class="d-none" data-nav-auth>
+                                                <span class="nav-link d-inline font-weight-bold" data-nav-username></span>
+                                                <a class="nav-link d-inline" href="{% url 'web-profile' %}">Profile</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                                <button type="button" class="btn btn-link nav-link d-inline text-danger p-0 align-baseline" data-logout-button data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                                        </div>
+                                </nav>
 			</div>
 		</header>
-		<section class="container">
-			<div class="row justify-content-center">
-				<div class="col-sm-6">
-					<!-- TODO: EVENT LISTINGS-->
-					<!-- PAGES OR INFINITE SCROLL? -->
-				</div>
-			</div>
-		</section>
-		<footer class="container">
-			<div class="row">
-				<p class="col-sm-4">&copy; 2025 CampusBites</p>
-			</div>
-		</footer>
+                <section class="container">
+                        <div class="row justify-content-center">
+                                <div class="col-sm-6">
+                                        <div data-events-alerts></div>
+                                        <!-- TODO: EVENT LISTINGS-->
+                                        <!-- PAGES OR INFINITE SCROLL? -->
+                                        <div class="mt-3" data-events-list>
+                                                <p class="text-muted">Loading events…</p>
+                                        </div>
+                                </div>
+                        </div>
+                </section>
+                <footer class="container">
+                        <div class="row">
+                                <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                        </div>
+                </footer>
+                <script src="{% static 'app.js' %}"></script>
+        </body>
+</html>
