@@ -16,7 +16,11 @@
 			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
 			crossorigin="anonymous"
 		/>
-		<link
+                <link 
+                        rel="stylesheet"
+                        href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+                />		
+                <link
 			href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
 			rel="stylesheet"
 			type="text/css"
@@ -49,9 +53,9 @@
 		</header>
 		<section class="container">
 			<div class="row justify-content-center">
-				<div class="col-sm-6">
-					<!-- TODO: CALENDAR INTERACTIVE-->
-				</div>
+				<div class="col-sm-8">
+                                        <div id="calendar"></div>
+                                </div>
 			</div>
 		</section>
                 <footer class="container">
@@ -60,5 +64,29 @@
                         </div>
                 </footer>
                 <script src="{% static 'app.js' %}"></script>
+                <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+                
+                <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var calendarEl = document.getElementById('calendar');
+                            var calendar = new FullCalendar.Calendar(calendarEl, {
+                                initialView: 'dayGridMonth',
+                                headerToolbar: {
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                                },
+                                events: '/api/events/', // Fetch events from the API endpoint
+                                eventClick: function(info) {
+                                    // Display event details in an alert or modal
+                                    alert('Event: ' + info.event.title + '\n' +
+                                          'Start: ' + info.event.start.toLocaleString() + '\n' +
+                                          (info.event.end ? 'End: ' + info.event.end.toLocaleString() + '\n' : '') +
+                                          (info.event.extendedProps.description ? 'Description: ' + info.event.extendedProps.description : ''));
+                                }
+                            });
+                            calendar.render();
+                        });
+                </script>
         </body>
 </html>
