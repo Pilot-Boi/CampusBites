@@ -22,6 +22,14 @@ def calendar_page(request):
 def profile_page(request):
     return render(request, "profile.html")
 
+def prof_settings_page(request):
+    return render(request, "profile_settings.html")
+
+def prof_friends_page(request):
+    return render(request, "profile_friends.html")
+
+def prof_messages_page(request):
+    return render(request, "profile_messages.html")
 
 def contact_page(request):
     return render(request, "contact.html")

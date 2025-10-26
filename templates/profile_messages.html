@@ -3,7 +3,7 @@
         Software Engineering Project
         Basma Chandour, Jason Diab, Emily Dugan, Michael Yin
 
-        CampusBites profile page
+        CampusBites profile messages page
 -->
 
 {% load static %}
@@ -56,7 +56,7 @@
                                                 <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
                                                 <ul class="nav flex-column nav-pills">
                                                         <li class="nav-item">
-                                                                <span class="nav-link active">Overview</span>
+                                                                <a class="nav-link disactive" href="{% url 'web-profile' %}">Overview</a>
                                                         </li>
                                                         <li class="nav-item">
                                                                 <a class="nav-link disactive" href="{% url 'web-profile-settings' %}">Settings</a>
@@ -65,7 +65,7 @@
                                                                 <a class="nav-link disactive" href="{% url 'web-profile-friends' %}">Friends</a>
                                                         </li>
                                                         <li class="nav-item">
-                                                                <a class="nav-link disactive" href="{% url 'web-profile-messages' %}">Messages</a>
+                                                                <span class="nav-link active">Messages</span>
                                                         </li>
                                                 </ul>
                                                 <div class="mt-4">

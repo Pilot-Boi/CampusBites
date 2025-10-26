@@ -20,6 +20,9 @@ from .frontend_views import (
     events_page,
     login_page,
     profile_page,
+    prof_settings_page,
+    prof_friends_page,
+    prof_messages_page,
     register_page,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -42,6 +45,9 @@ urlpatterns = [
     path("contact/", contact_page, name="web-contact"),
     path("calendar/", calendar_page, name="web-calendar"),
     path("profile/", profile_page, name="web-profile"),
+    path("profile/settings/", prof_settings_page, name="web-profile-settings"),
+    path("profile/friends/", prof_friends_page, name="web-profile-friends"),
+    path("profile/messages/", prof_messages_page, name="web-profile-messages"),
     path("api/", include(router.urls)),
     path("api/auth/login/", LoginView.as_view(), name="api-login"),
     path("api/auth/logout/", LogoutView.as_view(), name="api-logout"),
