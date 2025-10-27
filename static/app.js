@@ -309,8 +309,8 @@
     }
 
     function populateProfile(authState) {
-        const usernameDisplay = document.querySelector("[data-profile-username]");
-        if (!usernameDisplay) {
+        const usernameDisplays = document.querySelectorAll("[data-profile-username]");
+        if (!usernameDisplays.length) {
             return;
         }
         const alerts = document.querySelector("[data-profile-alerts]");
@@ -321,7 +321,9 @@
         }
 
         const profile = authState.profile;
-        usernameDisplay.textContent = profile.user.username;
+        usernameDisplays.forEach(el => {
+            el.textContent = profile.user.username;
+        });
 
         const emailDisplay = document.querySelector("[data-profile-email]");
         if (emailDisplay) {
@@ -331,6 +333,82 @@
         const roleDisplay = document.querySelector("[data-profile-role]");
         if (roleDisplay) {
             roleDisplay.textContent = profile.is_organizer ? "Organizer" : "Guest";
+        }
+
+        // Handle profile overview (read-only)
+        const aboutMeDisplay = document.querySelector("[data-profile-about]");
+        if (aboutMeDisplay && !aboutMeDisplay.tagName.toLowerCase() === 'textarea') {
+            aboutMeDisplay.textContent = profile.about_me || "No information provided yet.";
+        }
+
+        // Handle settings page (editable)
+        const aboutMeTextarea = document.querySelector("textarea[data-profile-about]");
+        if (aboutMeTextarea) {
+            aboutMeTextarea.value = profile.about_me || "";
+        }
+
+        const profilePicture = document.querySelector("[data-profile-picture]");
+        if (profilePicture && profile.profile_picture) {
+            profilePicture.src = profile.profile_picture;
+        }
+
+        // Handle About Me save button in settings
+        const aboutMeSaveBtn = document.querySelector("[data-save-about]");
+        if (aboutMeSaveBtn && aboutMeTextarea) {
+            aboutMeSaveBtn.addEventListener("click", async () => {
+                try {
+                    const response = await apiFetch(PROFILE_ENDPOINT, {
+                        method: "PATCH",
+                        body: { about_me: aboutMeTextarea.value }
+                    });
+                    if (response.ok) {
+                        showAlert(alerts, "About Me updated successfully!", "success");
+                    } else {
+                        showAlert(alerts, "Failed to update About Me. Please try again.", "danger");
+                    }
+                } catch (error) {
+                    console.error("Failed to update About Me", error);
+                    showAlert(alerts, "Failed to update About Me. Please try again.", "danger");
+                }
+            });
+        }
+
+        // Handle Profile Picture upload in settings
+        const pictureUpload = document.querySelector("#profilePictureUpload");
+        const pictureUploadBtn = document.querySelector("[data-upload-picture]");
+        if (pictureUpload && pictureUploadBtn) {
+            pictureUploadBtn.addEventListener("click", async () => {
+                const file = pictureUpload.files[0];
+                if (!file) {
+                    showAlert(alerts, "Please select a file first.", "warning");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("profile_picture", file);
+
+                try {
+                    const response = await apiFetch(PROFILE_ENDPOINT, {
+                        method: "PATCH",
+                        body: formData
+                    });
+                    if (response.ok) {
+                        const updatedProfile = await response.json();
+                        const allProfilePictures = document.querySelectorAll("[data-profile-picture]");
+                        if (updatedProfile.profile_picture) {
+                            allProfilePictures.forEach(img => {
+                                img.src = updatedProfile.profile_picture;
+                            });
+                        }
+                        showAlert(alerts, "Profile picture updated successfully!", "success");
+                    } else {
+                        showAlert(alerts, "Failed to update profile picture. Please try again.", "danger");
+                    }
+                } catch (error) {
+                    console.error("Failed to update profile picture", error);
+                    showAlert(alerts, "Failed to update profile picture. Please try again.", "danger");
+                }
+            });
         }
     }
 

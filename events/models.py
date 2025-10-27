@@ -12,6 +12,8 @@ class Profile(models.Model):
     )
     is_organizer = models.BooleanField(default=False)
     notifications_opt_out = models.BooleanField(default=False)  # for US-7
+    about_me = models.TextField(blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} profile"

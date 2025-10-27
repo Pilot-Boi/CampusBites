@@ -8,103 +8,213 @@
 
 {% load static %}
 <html lang="en">
-        <head>
-                <title>CampusBites</title>
-                <meta charset="utf-8" />
-                <link
-                        rel="stylesheet"
-                        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-                        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-                        crossorigin="anonymous"
-                />
-                <link
-                        href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
-                        rel="stylesheet"
-                        type="text/css"
-                />
-                <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-        </head>
-        <body data-require-auth="true" data-login-url="{% url 'web-login' %}">
-                <header class="container mb-4">
+
+<head>
+        <title>CampusBites</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+                integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+                crossorigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+        <header class="container mb-4">
+                <div class="row">
+                        <h1 class="col-sm-6">CampusBites</h1>
+                        <!-- NAVIGATION BAR -->
+                        <nav class="col-sm-6 text-right">
+                                <div data-nav-guest>
+                                        <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                </div>
+                                <div class="d-none" data-nav-auth>
+                                        <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                        <a class="nav-link d-inline p-0" href="{% url 'web-profile' %}"
+                                                style="vertical-align: middle;">
+                                                <img src="{% static 'images/default-avatar.png' %}" alt="Profile"
+                                                        class="rounded-circle"
+                                                        style="width: 32px; height: 32px; object-fit: cover;"
+                                                        data-profile-picture>
+                                                <span class="nav-link d-inline font-weight-bold"
+                                                        data-nav-username></span>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-link nav-link d-inline text-danger p-0 align-baseline"
+                                                data-logout-button
+                                                data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                                </div>
+                        </nav>
+                </div>
+        </header>
+        <section class="page-hero py-3">
+                <div class="container-fluid mt-4">
                         <div class="row">
-                                <h1 class="col-sm-6">CampusBites</h1>
-                                <!-- NAVIGATION BAR -->
-                                <nav class="col-sm-6 text-right">
-                                        <div data-nav-guest>
-                                                <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
-                                        </div>
-                                        <div class="d-none" data-nav-auth>
-                                                <span class="nav-link d-inline font-weight-bold" data-nav-username></span>
-                                                <a class="nav-link d-inline" href="{% url 'web-profile' %}">Profile</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
-                                                <button type="button" class="btn btn-link nav-link d-inline text-danger p-0 align-baseline" data-logout-button data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                                <!-- Sidebar -->
+                                <nav class="col-md-3 col-lg-2 d-md-block sidebar-panel sidebar shadow-sm rounded p-3">
+                                        <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
+                                        <ul class="nav flex-column nav-pills">
+                                                <li class="nav-item">
+                                                        <a class="nav-link disactive"
+                                                                href="{% url 'web-profile' %}">Overview</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                        <span class="nav-link active">Settings</span>
+                                                </li>
+                                                <li class="nav-item">
+                                                        <a class="nav-link disactive"
+                                                                href="{% url 'web-profile-friends' %}">Friends</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                        <a class="nav-link disactive"
+                                                                href="{% url 'web-profile-messages' %}">Messages</a>
+                                                </li>
+                                        </ul>
+                                        <div class="mt-4">
+                                                <button type="button" class="btn btn-outline-danger btn-block w-100"
+                                                        data-logout-button
+                                                        data-logout-redirect="{% url 'web-login' %}">Log out</button>
                                         </div>
                                 </nav>
-                        </div>
-                </header>
-                <section class="page-hero py-3">
-                        <div class="container-fluid mt-4">
-                                <div class="row">
-                                        <!-- Sidebar -->
-                                        <nav class="col-md-3 col-lg-2 d-md-block sidebar-panel sidebar shadow-sm rounded p-3">
-                                                <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
-                                                <ul class="nav flex-column nav-pills">
-                                                        <li class="nav-item">
-                                                                <a class="nav-link disactive" href="{% url 'web-profile' %}">Overview</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                                <span class="nav-link active">Settings</span>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                                <a class="nav-link disactive" href="{% url 'web-profile-friends' %}">Friends</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                                <a class="nav-link disactive" href="{% url 'web-profile-messages' %}">Messages</a>
-                                                        </li>
-                                                </ul>
-                                                <div class="mt-4">
-                                                        <button type="button" class="btn btn-outline-danger btn-block w-100" data-logout-button data-logout-redirect="{% url 'web-login' %}">Log out</button>
-                                                </div>
-                                        </nav>
 
-                                        <!-- Main Content -->
-                                        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 profile-main">
-                                                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                                                        <h2>Settings</h2>
-                                                </div>
-                                                <div data-profile-alerts></div>
-                                                <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                        <h5 class="mb-3">Account Settings</h5>
-                                                        <form>
-                                                                <div class="form-group mb-3">
-                                                                        <label for="email">Email address</label>
-                                                                        <input type="email" name="email" class="form-control" placeholder="Enter new email">
+                                <!-- Main Content -->
+                                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 profile-main">
+                                        <div
+                                                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                                                <h2>Settings</h2>
+                                        </div>
+                                        <div data-profile-alerts></div>
+                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                <h5 class="mb-3">Account</h5>
+                                                <form>
+                                                        <div class="form-group mb-3">
+                                                                <label for="email">Email address</label>
+                                                                <input type="email" name="email" class="form-control"
+                                                                        placeholder="Enter new email">
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label for="password">Password</label>
+                                                                <input type="password" name="password"
+                                                                        class="form-control"
+                                                                        placeholder="Enter new password">
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label for="password-confirm">Confirm Password</label>
+                                                                <input type="password" name="password-confirm"
+                                                                        class="form-control"
+                                                                        placeholder="Confirm new password">
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary">Update
+                                                                Settings</button>
+                                                </form>
+                                        </div>
+                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                <h5 class="mb-3">Notifications and Privacy</h5>
+                                                <form>
+                                                        <div class="form-group mb-3">
+                                                                <label>Profile visibility</label>
+                                                                <select class="form-control" name="profile_visibility">
+                                                                        <option value="public">Public</option>
+                                                                        <option value="friends_only">Friends only
+                                                                        </option>
+                                                                        <option value="private">Private</option>
+                                                                </select>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label>Email notifications</label>
+                                                                <ul>
+                                                                        <li><input type="checkbox"
+                                                                                        name="event_reminders"> Event
+                                                                                reminders</li>
+                                                                        <li><input type="checkbox"
+                                                                                        name="friend_requests"> Friend
+                                                                                requests</li>
+                                                                        <li><input type="checkbox" name="messages">
+                                                                                Messages</li>
+                                                                </ul>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label>Push notifications</label>
+                                                                <ul>
+                                                                        <li><input type="checkbox"
+                                                                                        name="event_reminders_push">
+                                                                                Event reminders</li>
+                                                                        <li><input type="checkbox"
+                                                                                        name="friend_requests_push">
+                                                                                Friend requests</li>
+                                                                        <li><input type="checkbox" name="messages_push">
+                                                                                Messages</li>
+                                                                </ul>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary">Update
+                                                                Settings</button>
+                                                </form>
+                                        </div>
+                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                <h5 class="mb-3">Appearance</h5>
+                                                <form>
+                                                        <div class="form-group mb-3">
+                                                                <label>Change Theme</label>
+                                                                <select class="form-control" name="theme">
+                                                                        <option value="light">Light</option>
+                                                                        <option value="dark">Dark</option>
+                                                                </select>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label>Profile Picture</label>
+                                                                <div class="text-center mb-3">
+                                                                        <img src="{% static 'images/default-avatar.png' %}"
+                                                                                alt="Profile Picture"
+                                                                                class="rounded-circle mb-3"
+                                                                                style="width: 150px; height: 150px; object-fit: cover;"
+                                                                                data-profile-picture>
                                                                 </div>
-                                                                <div class="form-group mb-3">
-                                                                        <label for="password">Password</label>
-                                                                        <input type="password" name="password" class="form-control" placeholder="Enter new password">
-                                                                </div>
-                                                                <button type="submit" class="btn btn-primary">Update Settings</button>
-                                                        </form>
-                                                </div>
-                                                <div class="card shadow-sm rounded-3 p-4">
-                                                        <p class="text-muted">This is where your profile content, settings, or dashboard widgets would appear.</p>
-                                                </div>
-                                        </main>
-                                </div>
+                                                                <input type="file" class="form-control-file"
+                                                                        id="profilePictureUpload" accept="image/*">
+                                                                <button type="button"
+                                                                        class="btn btn-primary btn-sm mt-2"
+                                                                        data-upload-picture>Update Picture</button>
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                                <label>Edit About Me</label>
+                                                                <textarea class="form-control" rows="5"
+                                                                        placeholder="Tell others about yourself..."
+                                                                        data-profile-about></textarea>
+                                                                <button type="button"
+                                                                        class="btn btn-primary btn-sm mt-2"
+                                                                        data-save-about>Save About Me</button>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary">Update
+                                                                Settings</button>
+                                                </form>
+                                        </div>
+                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                <h5 class="mb-3">Delete Account</h5>
+                                                <form>
+                                                        <div class="form-group mb-3">
+                                                                <p class="text-danger">This action is irreversible. All
+                                                                        your data will be permanently deleted.</p>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-danger">Delete
+                                                                Account</button>
+                                                </form>
+                                        </div>
+                                </main>
                         </div>
-                </section>
-                <footer class="container">
-                        <div class="row">
-                                <p class="col-sm-4">&copy; 2025 CampusBites</p>
-                        </div>
-                </footer>
-                <script src="{% static 'app.js' %}"></script>
-        </body>
+                </div>
+        </section>
+        <footer class="container">
+                <div class="row">
+                        <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                </div>
+        </footer>
+        <script src="{% static 'app.js' %}"></script>
+</body>
+
 </html>

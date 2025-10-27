@@ -154,3 +154,11 @@ footer .col-sm-8 {
 footer ul {
 	list-style: none;
 }
+
+a span {
+    color: black;
+}
+
+a span:hover {
+	color: #007bff;
+}

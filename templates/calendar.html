@@ -7,86 +7,89 @@
 -->
 {% load static %}
 <html lang="en">
-        <head>
-                <title>CampusBites</title>
-		<meta charset="utf-8" />
-		<link
-			rel="stylesheet"
-			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-			crossorigin="anonymous"
-		/>
-                <link 
-                        rel="stylesheet"
-                        href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
-                />		
-                <link
-			href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
-			rel="stylesheet"
-			type="text/css"
-		/>
-                <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-        </head>
-        <body data-require-auth="true" data-login-url="{% url 'web-login' %}">
-                <header class="container">
-                        <div class="row">
-                                <h1 class="col-sm-6">CampusBites</h1>
-                                <!-- NAVIGATION BAR -->
-                                <nav class="col-sm-6 text-right">
-                                        <div data-nav-guest>
-                                                <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
-                                        </div>
-                                        <div class="d-none" data-nav-auth>
-                                                <span class="nav-link d-inline font-weight-bold" data-nav-username></span>
-                                                <a class="nav-link d-inline" href="{% url 'web-profile' %}">Profile</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                                <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
-                                                <button type="button" class="btn btn-link nav-link d-inline text-danger p-0 align-baseline" data-logout-button data-logout-redirect="{% url 'web-login' %}">Logout</button>
-                                        </div>
-                                </nav>
-			</div>
-		</header>
-		<section class="container">
-			<div class="row justify-content-center">
-				<div class="col-sm-8">
-                                        <div id="calendar"></div>
+
+<head>
+        <title>CampusBites</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+                integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+                crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+        <header class="container">
+                <div class="row">
+                        <h1 class="col-sm-6">CampusBites</h1>
+                        <!-- NAVIGATION BAR -->
+                        <nav class="col-sm-6 text-right">
+                                <div data-nav-guest>
+                                        <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
                                 </div>
-			</div>
-		</section>
-                <footer class="container">
-                        <div class="row">
-                                <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                                <div class="d-none" data-nav-auth>
+                                        <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
+                                        <a class="nav-link d-inline p-0" href="{% url 'web-profile' %}"
+                                                style="vertical-align: middle;">
+                                                <img src="{% static 'images/default-avatar.png' %}" alt="Profile"
+                                                        class="rounded-circle"
+                                                        style="width: 32px; height: 32px; object-fit: cover;"
+                                                        data-profile-picture>
+                                                <span class="nav-link d-inline font-weight-bold"
+                                                        data-nav-username></span>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-link nav-link d-inline text-danger p-0 align-baseline"
+                                                data-logout-button
+                                                data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                                </div>
+                        </nav>
+                </div>
+        </header>
+        <section class="container">
+                <div class="row justify-content-center">
+                        <div class="col-sm-8">
+                                <div id="calendar"></div>
                         </div>
-                </footer>
-                <script src="{% static 'app.js' %}"></script>
-                <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-                
-                <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var calendarEl = document.getElementById('calendar');
-                            var calendar = new FullCalendar.Calendar(calendarEl, {
+                </div>
+        </section>
+        <footer class="container">
+                <div class="row">
+                        <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                </div>
+        </footer>
+        <script src="{% static 'app.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+        <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                        var calendarEl = document.getElementById('calendar');
+                        var calendar = new FullCalendar.Calendar(calendarEl, {
                                 initialView: 'dayGridMonth',
                                 headerToolbar: {
-                                    left: 'prev,next today',
-                                    center: 'title',
-                                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                                        left: 'prev,next today',
+                                        center: 'title',
+                                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
                                 },
                                 events: '/api/events/', // Fetch events from the API endpoint
-                                eventClick: function(info) {
-                                    // Display event details in an alert or modal
-                                    alert('Event: ' + info.event.title + '\n' +
-                                          'Start: ' + info.event.start.toLocaleString() + '\n' +
-                                          (info.event.end ? 'End: ' + info.event.end.toLocaleString() + '\n' : '') +
-                                          (info.event.extendedProps.description ? 'Description: ' + info.event.extendedProps.description : ''));
+                                eventClick: function (info) {
+                                        // Display event details in an alert or modal
+                                        alert('Event: ' + info.event.title + '\n' +
+                                                'Start: ' + info.event.start.toLocaleString() + '\n' +
+                                                (info.event.end ? 'End: ' + info.event.end.toLocaleString() + '\n' : '') +
+                                                (info.event.extendedProps.description ? 'Description: ' + info.event.extendedProps.description : ''));
                                 }
-                            });
-                            calendar.render();
                         });
-                </script>
-        </body>
+                        calendar.render();
+                });
+        </script>
+</body>
+
 </html>

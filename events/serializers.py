@@ -26,13 +26,13 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ["id", "user", "is_organizer", "notifications_opt_out"]
+        fields = ["id", "user", "is_organizer", "notifications_opt_out", "about_me", "profile_picture"]
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["is_organizer", "notifications_opt_out"]
+        fields = ["is_organizer", "notifications_opt_out", "about_me", "profile_picture"]
 
 
 class SignupSerializer(serializers.ModelSerializer):
