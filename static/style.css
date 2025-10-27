@@ -32,25 +32,67 @@ a {
 }
 
 .bg-light {
-	display: flex;
-	align-items: center;
-	/* ADD A BACKGROUND IMAGE */
-	/* background-image: url('LINK'); */
-	/* background-size: cover; */
+	/* Use larger vertical padding so the hero area clears the header even
+	   when titles are large. Keeps text dark and uses a subtle background
+	   similar to Bootstrap's .bg-light. */
+	background-color: #f8f9fa;
 	color: #000;
-	height: 400px;
+	padding: 4rem 0; /* increased top/bottom padding to avoid overlap */
 }
 
 .bg-light h2 {
-	font-size: 60px;
+	font-size: 2.5rem; /* responsive-friendly size */
 	font-weight: 700;
-	margin: 0;
+	margin: 0 0 0.5rem 0;
 	color: #000;
+	line-height: 1.05;
 }
 
 .bg-light h3 {
-	margin: 0 0 20px;
+	margin: 0 0 1rem 0;
 	color: #000;
+}
+
+/* If a sidebar also uses .bg-light, keep its internal padding compact */
+.sidebar.bg-light {
+	padding: 1rem !important;
+}
+
+/* Small helper for profile pages to ensure main content sits below header
+   and provide breathing room above the footer. */
+.profile-main {
+	margin-top: 1rem;
+	margin-bottom: 2rem;
+	padding-bottom: 1rem;
+}
+
+/* Make sure cards and content inside the profile area don't extend
+   visually into the footer; add a minimum spacing at the bottom. */
+section.bg-light > .container-fluid {
+	padding-bottom: 1rem;
+}
+
+/* Dedicated hero block for page titles and large headers so we don't
+   accidentally change Bootstrap's .bg-light used elsewhere. */
+.page-hero {
+	background-color: #f5f5f5;
+	color: #000;
+	padding: 4rem 0; /* generous vertical spacing to clear header */
+}
+
+.page-hero h2 {
+	font-size: 2.5rem;
+	font-weight: 700;
+	line-height: 1.05;
+	margin: 0 0 0.5rem 0;
+}
+
+/* Sidebar panel that visually matches the hero without using the
+   .page-hero container so spacing is controlled independently. */
+.sidebar-panel {
+	background-color: #f5f5f5;
+	border-radius: 0.25rem;
+	padding: 1rem !important;
 }
 
 section .row img {

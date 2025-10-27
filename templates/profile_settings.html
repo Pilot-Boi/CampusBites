@@ -3,7 +3,7 @@
         Software Engineering Project
         Basma Chandour, Jason Diab, Emily Dugan, Michael Yin
 
-        CampusBites profile settings page
+        CampusBites profile messages page
 -->
 
 {% load static %}
@@ -25,7 +25,7 @@
                 <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
         </head>
         <body data-require-auth="true" data-login-url="{% url 'web-login' %}">
-                <header class="container">
+                <header class="container mb-4">
                         <div class="row">
                                 <h1 class="col-sm-6">CampusBites</h1>
                                 <!-- NAVIGATION BAR -->
@@ -48,11 +48,11 @@
                                 </nav>
                         </div>
                 </header>
-                <section class="bg-light py-3">
+                <section class="page-hero py-3">
                         <div class="container-fluid mt-4">
                                 <div class="row">
                                         <!-- Sidebar -->
-                                        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar shadow-sm rounded p-3">
+                                        <nav class="col-md-3 col-lg-2 d-md-block sidebar-panel sidebar shadow-sm rounded p-3">
                                                 <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
                                                 <ul class="nav flex-column nav-pills">
                                                         <li class="nav-item">
@@ -74,21 +74,24 @@
                                         </nav>
 
                                         <!-- Main Content -->
-                                        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                                        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 profile-main">
                                                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                                                        <h2>Your Profile</h2>
+                                                        <h2>Settings</h2>
                                                 </div>
                                                 <div data-profile-alerts></div>
                                                 <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                        <h5 class="mb-3">Account Details</h5>
-                                                        <dl class="row mb-0">
-                                                                <dt class="col-sm-4">Username</dt>
-                                                                <dd class="col-sm-8" data-profile-username></dd>
-                                                                <dt class="col-sm-4">Email</dt>
-                                                                <dd class="col-sm-8" data-profile-email>Not provided</dd>
-                                                                <dt class="col-sm-4">Role</dt>
-                                                                <dd class="col-sm-8" data-profile-role>Guest</dd>
-                                                        </dl>
+                                                        <h5 class="mb-3">Account Settings</h5>
+                                                        <form>
+                                                                <div class="form-group mb-3">
+                                                                        <label for="email">Email address</label>
+                                                                        <input type="email" name="email" class="form-control" placeholder="Enter new email">
+                                                                </div>
+                                                                <div class="form-group mb-3">
+                                                                        <label for="password">Password</label>
+                                                                        <input type="password" name="password" class="form-control" placeholder="Enter new password">
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary">Update Settings</button>
+                                                        </form>
                                                 </div>
                                                 <div class="card shadow-sm rounded-3 p-4">
                                                         <p class="text-muted">This is where your profile content, settings, or dashboard widgets would appear.</p>
