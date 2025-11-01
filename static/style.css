@@ -10,6 +10,126 @@ body {
 	background-color: #FFFAFF;
 	min-height: 100vh;
 	color: #303036;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Styles */
+body.dark-mode,
+html.dark-mode body {
+	background-color: #1a1a1a;
+	color: #e0e0e0;
+}
+
+body.dark-mode header,
+html.dark-mode body header {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+}
+
+body.dark-mode header a,
+body.dark-mode header .nav-link,
+html.dark-mode body header a,
+html.dark-mode body header .nav-link {
+	color: #050401;
+}
+
+body.dark-mode header a:hover,
+body.dark-mode header .nav-link:hover,
+html.dark-mode body header a:hover,
+html.dark-mode body header .nav-link:hover {
+	color: #FFFAFF;
+}
+
+body.dark-mode footer,
+html.dark-mode body footer {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+}
+
+body.dark-mode .bg-light {
+	background-color: #2a2a2a !important;
+	color: #e0e0e0;
+}
+
+body.dark-mode .page-hero {
+	background-color: #2a2a2a;
+	color: #e0e0e0;
+}
+
+body.dark-mode .card {
+	background-color: #2a2a2a;
+	color: #e0e0e0;
+	border: 1px solid #3a3a3a;
+}
+
+body.dark-mode .card-header {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+}
+
+body.dark-mode .form-control {
+	background-color: #333;
+	color: #e0e0e0;
+	border-color: #3a3a3a;
+}
+
+body.dark-mode .form-control:focus {
+	background-color: #3a3a3a;
+	color: #e0e0e0;
+	border-color: #0d7a99;
+}
+
+body.dark-mode .sidebar-panel {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+}
+
+body.dark-mode .sidebar-panel .nav-link:hover:not(.active) {
+	color: #e0e0e0;
+	transform: translateX(5px);
+	background-color: transparent;
+}
+
+body.dark-mode .sidebar-panel .nav-link.active {
+	background-color: #30BCED !important;
+	color: #050401 !important;
+	font-weight: 600;
+}
+
+body.dark-mode .list-group-item {
+	background-color: #2a2a2a;
+	color: #e0e0e0;
+	border-color: #3a3a3a;
+}
+
+body.dark-mode .list-group-item:hover {
+	background-color: #333;
+}
+
+body.dark-mode .list-group-item.active {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+}
+
+body.dark-mode a {
+	color: #0d7a99;
+}
+
+body.dark-mode a:hover {
+	color: #FC5130;
+}
+
+body.dark-mode .btn-primary {
+	background: #0d7a99;
+}
+
+body.dark-mode .btn-primary:hover {
+	background: #0a5f7a;
+}
+
+body.dark-mode .nav-pills .nav-link.active {
+	background: #0d7a99;
+	color: #fff;
+}
+
+body.dark-mode .bg-light h2,
+body.dark-mode .bg-light h3 {
+	color: #e0e0e0;
 }
 
 header {
@@ -162,6 +282,7 @@ a:hover {
 	border-radius: 0.25rem;
 }
 
+
 /* Small helper for profile pages to ensure main content sits below header
    and provide breathing room above the footer. */
 .profile-main {
@@ -222,7 +343,6 @@ section.bg-light > .container-fluid {
 }
 
 .sidebar-panel .nav-link:hover {
-	background-color: rgba(255, 255, 255, 0.2);
 	color: #fff;
 	transform: translateX(5px);
 }
@@ -231,6 +351,12 @@ section.bg-light > .container-fluid {
 	background-color: rgba(255, 255, 255, 0.3);
 	color: #fff;
 	font-weight: 600;
+}
+
+.sidebar-panel .nav-link:hover:not(.active) {
+	color: #e0e0e0;
+	transform: translateX(5px);
+	background-color: transparent;
 }
 
 /* Logout buttons styling */

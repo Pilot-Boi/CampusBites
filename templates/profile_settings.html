@@ -12,6 +12,15 @@
 <head>
         <title>CampusBites</title>
         <meta charset="utf-8" />
+        <script>
+                // Apply theme immediately to prevent flash
+                (function() {
+                        const theme = localStorage.getItem('theme') || 'light';
+                        if (theme === 'dark') {
+                                document.documentElement.classList.add('dark-mode');
+                        }
+                })();
+        </script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
                 integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
                 crossorigin="anonymous" />
@@ -94,9 +103,12 @@
                                                 <h2>Settings</h2>
                                         </div>
                                         <div data-profile-alerts></div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Account</h5>
-                                                <form>
+                                        
+                                        <!-- Combined Settings Form -->
+                                        <form>
+                                                <!-- Account Section -->
+                                                <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                        <h5 class="mb-3">Account</h5>
                                                         <div class="form-group mb-3">
                                                                 <label for="email">Email address</label>
                                                                 <input type="email" name="email" class="form-control"
@@ -114,13 +126,11 @@
                                                                         class="form-control"
                                                                         placeholder="Confirm new password">
                                                         </div>
-                                                        <button type="submit" class="btn btn-primary">Update
-                                                                Settings</button>
-                                                </form>
-                                        </div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Notifications and Privacy</h5>
-                                                <form>
+                                                </div>
+
+                                                <!-- Notifications and Privacy Section -->
+                                                <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                        <h5 class="mb-3">Notifications and Privacy</h5>
                                                         <div class="form-group mb-3">
                                                                 <label>Profile visibility</label>
                                                                 <select class="form-control" name="profile_visibility">
@@ -156,13 +166,11 @@
                                                                                 Messages</li>
                                                                 </ul>
                                                         </div>
-                                                        <button type="submit" class="btn btn-primary">Update
-                                                                Settings</button>
-                                                </form>
-                                        </div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Appearance</h5>
-                                                <form>
+                                                </div>
+
+                                                <!-- Appearance Section -->
+                                                <div class="card shadow-sm rounded-3 p-4 mb-3">
+                                                        <h5 class="mb-3">Appearance</h5>
                                                         <div class="form-group mb-3">
                                                                 <label>Change Theme</label>
                                                                 <select class="form-control" name="theme">
@@ -194,12 +202,17 @@
                                                                         class="btn btn-primary btn-sm mt-2"
                                                                         data-save-about>Save About Me</button>
                                                         </div>
-                                                        <button type="submit" class="btn btn-primary">Update
-                                                                Settings</button>
-                                                </form>
-                                        </div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Delete Account</h5>
+                                                </div>
+
+                                                <!-- Update Settings Button -->
+                                                <div class="text-center mb-4">
+                                                        <button type="submit" class="btn btn-primary btn-lg px-5">Update Settings</button>
+                                                </div>
+                                        </form>
+
+                                        <!-- Delete Account Section (Separate) -->
+                                        <div class="card shadow-sm rounded-3 p-4 mb-3 border-danger">
+                                                <h5 class="mb-3 text-danger">Delete Account</h5>
                                                 <form>
                                                         <div class="form-group mb-3">
                                                                 <p class="text-danger">This action is irreversible. All

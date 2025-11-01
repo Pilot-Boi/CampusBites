@@ -850,7 +850,81 @@
         await loadConversations();
     }
 
+    function initSettingsFormWarning() {
+        const settingsForm = document.querySelector('main form:not([data-logout-button])');
+        if (!settingsForm) {
+            return;
+        }
+
+        let formChanged = false;
+        let formSubmitted = false;
+
+        // Track changes to any form input
+        const formInputs = settingsForm.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                formChanged = true;
+            });
+            input.addEventListener('input', () => {
+                formChanged = true;
+            });
+        });
+
+        // Mark form as submitted when submit button is clicked
+        settingsForm.addEventListener('submit', () => {
+            formSubmitted = true;
+        });
+
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', (event) => {
+            if (formChanged && !formSubmitted) {
+                event.preventDefault();
+                event.returnValue = ''; // Required for Chrome
+                return ''; // For older browsers
+            }
+        });
+    }
+
+    function applyTheme() {
+        // Load saved theme from localStorage and apply it
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+
+    function initThemeToggle() {
+        const themeSelect = document.querySelector('select[name="theme"]');
+        if (!themeSelect) {
+            return;
+        }
+
+        // Load saved theme from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        themeSelect.value = savedTheme;
+
+        // Handle theme change
+        themeSelect.addEventListener('change', (e) => {
+            const theme = e.target.value;
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            // Save theme preference
+            localStorage.setItem('theme', theme);
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
+        // Apply theme immediately on page load for all pages
+        applyTheme();
+        
         const authState = await initAuthUI();
 
         if (
@@ -869,5 +943,7 @@
         populateProfile(authState);
         bindLoginForm();
         bindRegisterForm();
+        initSettingsFormWarning();
+        initThemeToggle();
     });
 })();
