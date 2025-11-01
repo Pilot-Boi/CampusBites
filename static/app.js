@@ -177,12 +177,19 @@
                 const card = document.createElement("div");
                 card.className = "card mb-3 shadow-sm";
 
+                // Card Header
+                const cardHeader = document.createElement("div");
+                cardHeader.className = "card-header";
+                
+                const title = document.createElement("h5");
+                title.className = "mb-0";
+                title.textContent = event.title;
+                
+                cardHeader.appendChild(title);
+
+                // Card Body
                 const cardBody = document.createElement("div");
                 cardBody.className = "card-body";
-
-                const title = document.createElement("h5");
-                title.className = "card-title";
-                title.textContent = event.title;
 
                 const timing = document.createElement("p");
                 timing.className = "card-subtitle mb-2 text-muted";
@@ -280,12 +287,13 @@
                     rsvpContainer.appendChild(calendarLink);
                 }
 
-                cardBody.appendChild(title);
                 cardBody.appendChild(timing);
                 cardBody.appendChild(description);
                 cardBody.appendChild(location);
                 cardBody.appendChild(stats);
                 cardBody.appendChild(rsvpContainer);
+                
+                card.appendChild(cardHeader);
                 card.appendChild(cardBody);
                 listContainer.appendChild(card);
 
