@@ -149,6 +149,152 @@
         });
     }
 
+       function showEventDetailsModal(event) {
+           const modalBody = document.getElementById('eventDetailsBody');
+           const modalTitle = document.getElementById('eventDetailsModalLabel');
+           const modalFooter = document.getElementById('eventDetailsFooter');
+       
+           if (!modalBody || !modalTitle) return;
+       
+           // Set modal title
+           modalTitle.textContent = event.title;
+       
+           // Build modal content
+           const content = document.createElement('div');
+       
+           // Timing
+           const timing = document.createElement('p');
+           timing.className = 'mb-3';
+           const start = formatDateTime(event.start_time);
+           const end = formatDateTime(event.end_time);
+           timing.innerHTML = `<strong>When:</strong> ${end ? `${start} – ${end}` : start}`;
+           content.appendChild(timing);
+       
+           // Location
+           const location = document.createElement('p');
+           location.className = 'mb-3';
+           location.innerHTML = `<strong>Where:</strong> ${event.location_name || event.address || 'Location TBA'}`;
+           if (event.address && event.address !== event.location_name) {
+               location.innerHTML += `<br><small class="text-muted">${event.address}</small>`;
+           }
+           content.appendChild(location);
+       
+           // Description
+           const description = document.createElement('p');
+           description.className = 'mb-3';
+           description.innerHTML = `<strong>Description:</strong><br>${event.description || 'No description available.'}`;
+           content.appendChild(description);
+       
+           // Perks
+           if (event.perks) {
+               const perks = document.createElement('p');
+               perks.className = 'mb-3';
+               perks.innerHTML = `<strong>Perks:</strong><br>${event.perks}`;
+               content.appendChild(perks);
+           }
+       
+           // RSVP Stats
+           const stats = document.createElement('p');
+           stats.className = 'mb-3';
+           const going = event.going_count ?? 0;
+           const maybe = event.maybe_count ?? 0;
+           const notGoing = event.not_going_count ?? 0;
+           stats.innerHTML = `<strong>RSVPs:</strong> Going: <span class="text-success">${going}</span>, Maybe: <span class="text-warning">${maybe}</span>, Not Going: <span style="color:#FC5130;">${notGoing}</span>`;
+           content.appendChild(stats);
+       
+           // Map (if available)
+           if (event.latitude && event.longitude) {
+               const mapContainer = document.createElement('div');
+               mapContainer.className = 'embed-responsive embed-responsive-16by9 mb-3';
+               mapContainer.style.borderRadius = '8px';
+               mapContainer.style.overflow = 'hidden';
+           
+               const mapIframe = document.createElement('iframe');
+               mapIframe.className = 'embed-responsive-item';
+               mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${event.latitude},${event.longitude}&zoom=15`;
+               mapIframe.setAttribute('frameborder', '0');
+               mapIframe.setAttribute('style', 'border:0');
+               mapIframe.setAttribute('allowfullscreen', '');
+               mapIframe.setAttribute('loading', 'lazy');
+           
+               mapContainer.appendChild(mapIframe);
+               content.appendChild(mapContainer);
+           }
+       
+           // Clear and set modal body content
+           modalBody.innerHTML = '';
+           modalBody.appendChild(content);
+       
+           // Add RSVP buttons to footer
+           const current = event.my_rsvp;
+           modalFooter.innerHTML = '';
+       
+           const btnGroup = document.createElement('div');
+           btnGroup.className = 'btn-group btn-group-sm mr-auto';
+           btnGroup.setAttribute('role', 'group');
+       
+           const btnGoing = document.createElement('button');
+           btnGoing.className = `btn ${current === 'going' ? 'btn-success' : 'btn-outline-success'}`;
+           btnGoing.textContent = 'Going';
+           btnGoing.dataset.rsvp = 'going';
+       
+           const btnMaybe = document.createElement('button');
+           btnMaybe.className = `btn ${current === 'maybe' ? 'btn-warning' : 'btn-outline-warning'}`;
+           btnMaybe.textContent = 'Maybe';
+           btnMaybe.dataset.rsvp = 'maybe';
+       
+           const btnNot = document.createElement('button');
+           btnNot.className = `btn ${current === 'not_going' ? 'btn-secondary' : 'btn-outline-secondary'}`;
+           btnNot.textContent = 'Not Going';
+           btnNot.dataset.rsvp = 'not_going';
+       
+           btnGroup.appendChild(btnGoing);
+           btnGroup.appendChild(btnMaybe);
+           btnGroup.appendChild(btnNot);
+           modalFooter.appendChild(btnGroup);
+       
+           // Add close button
+           const btnClose = document.createElement('button');
+           btnClose.className = 'btn btn-secondary';
+           btnClose.setAttribute('data-dismiss', 'modal');
+           btnClose.textContent = 'Close';
+           modalFooter.appendChild(btnClose);
+       
+           // Add RSVP click handlers
+           [btnGoing, btnMaybe, btnNot].forEach(btn => {
+               btn.addEventListener('click', async () => {
+                   const prev = btn.textContent;
+                   btn.disabled = true;
+                   btn.textContent = 'Saving…';
+                   try {
+                       const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
+                           method: 'POST',
+                           body: { event: event.id, status: btn.dataset.rsvp }
+                       });
+                       if (!resp.ok) {
+                           const data = await resp.json().catch(() => ({}));
+                           showAlert('[data-events-alerts]', flattenErrors(data) || 'Unable to save RSVP.', 'danger');
+                       } else {
+                           // Close modal and refresh list
+                           $('#eventDetailsModal').modal('hide');
+                           await loadEventsList();
+                           if (btn.dataset.rsvp === 'going') {
+                               showAlert('[data-events-alerts]', 'Great! This event has been added to your calendar.', 'success');
+                           }
+                       }
+                   } catch (e) {
+                       showAlert('[data-events-alerts]', 'Unable to save RSVP.', 'danger');
+                   } finally {
+                       btn.disabled = false;
+                       btn.textContent = prev;
+                   }
+               });
+           });
+       
+           // Show the modal
+           $('#eventDetailsModal').modal('show');
+       }
+
     async function loadEventsList() {
         const listContainer = document.querySelector("[data-events-list]");
         if (!listContainer) {
@@ -183,13 +329,29 @@
                 
                 const title = document.createElement("h5");
                 title.className = "mb-0";
+                   title.style.cursor = "pointer";
+                   title.style.color = "inherit";
                 title.textContent = event.title;
+               
+                   // Add click handler to show modal
+                   title.addEventListener('click', () => showEventDetailsModal(event));
                 
                 cardHeader.appendChild(title);
 
                 // Card Body
                 const cardBody = document.createElement("div");
                 cardBody.className = "card-body";
+
+                // Check if we have location data for map
+                const hasMap = event.latitude && event.longitude;
+                
+                // Create container for content layout
+                const contentContainer = document.createElement("div");
+                contentContainer.className = hasMap ? "row" : "";
+                
+                // Text content column
+                const textColumn = document.createElement("div");
+                textColumn.className = hasMap ? "col-md-7" : "";
 
                 const timing = document.createElement("p");
                 timing.className = "card-subtitle mb-2 text-muted";
@@ -287,11 +449,38 @@
                     rsvpContainer.appendChild(calendarLink);
                 }
 
-                cardBody.appendChild(timing);
-                cardBody.appendChild(description);
-                cardBody.appendChild(location);
-                cardBody.appendChild(stats);
-                cardBody.appendChild(rsvpContainer);
+                textColumn.appendChild(timing);
+                textColumn.appendChild(description);
+                textColumn.appendChild(location);
+                textColumn.appendChild(stats);
+                textColumn.appendChild(rsvpContainer);
+                
+                contentContainer.appendChild(textColumn);
+                
+                // Map column (if location data exists)
+                if (hasMap) {
+                    const mapColumn = document.createElement("div");
+                    mapColumn.className = "col-md-5";
+                    
+                    const mapContainer = document.createElement("div");
+                    mapContainer.className = "embed-responsive embed-responsive-4by3";
+                    mapContainer.style.borderRadius = "8px";
+                    mapContainer.style.overflow = "hidden";
+                    
+                    const mapIframe = document.createElement("iframe");
+                    mapIframe.className = "embed-responsive-item";
+                    mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${event.latitude},${event.longitude}&zoom=15`;
+                    mapIframe.setAttribute("frameborder", "0");
+                    mapIframe.setAttribute("style", "border:0");
+                    mapIframe.setAttribute("allowfullscreen", "");
+                    mapIframe.setAttribute("loading", "lazy");
+                    
+                    mapContainer.appendChild(mapIframe);
+                    mapColumn.appendChild(mapContainer);
+                    contentContainer.appendChild(mapColumn);
+                }
+                
+                cardBody.appendChild(contentContainer);
                 
                 card.appendChild(cardHeader);
                 card.appendChild(cardBody);
