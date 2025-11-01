@@ -549,6 +549,11 @@
         const profile = authState.profile;
         usernameDisplays.forEach(el => {
             el.textContent = profile.user.username;
+            // Add 'loaded' class to parent h4 if it exists
+            const parentH4 = el.closest('h4');
+            if (parentH4) {
+                parentH4.classList.add('loaded');
+            }
         });
 
         const emailDisplay = document.querySelector("[data-profile-email]");
