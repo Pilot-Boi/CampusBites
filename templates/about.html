@@ -19,12 +19,15 @@
 </head>
 
 <body>
-        <header class="container">
-                <div class="row">
-                        <h1 class="col-sm-6">CampusBites</h1>
-
-                        <!-- NAVIGATION BAR -->
-                        <nav class="col-sm-6 text-right">
+        <header>
+                <div class="container-fluid px-5">
+                        <div class="row align-items-center">
+                                <div class="col-sm-6">
+                                        <h1>CampusBites</h1>
+                                </div>
+                                <div class="col-sm-6">
+                                        <!-- NAVIGATION BAR -->
+                                        <nav class="text-right">
                                 <div data-nav-guest>
                                         <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
                                         <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
@@ -50,8 +53,12 @@
                                                 data-logout-button
                                                 data-logout-redirect="{% url 'web-login' %}">Logout</button>
                                 </div>
-                        </nav>
+                                        </nav>
+                                </div>
+                        </div>
                 </div>
+        </header>
+        <section class="bg-light">
         </header>
         <section class="bg-light py-5">
                 <div class="container">
@@ -69,9 +76,11 @@
                         </div>
                 </div>
         </section>
-        <footer class="container">
-                <div class="row">
-                        <p class="col-sm-4">&copy; 2025 CampusBites</p>
+        <footer>
+                <div class="container-fluid px-5">
+                        <div class="row">
+                                <p class="col-sm-4">&copy; 2025 CampusBites</p>
+                        </div>
                 </div>
         </footer>
         <script src="{% static 'app.js' %}"></script>
