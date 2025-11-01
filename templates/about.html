@@ -32,13 +32,11 @@
                                         <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
                                         <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
                                         <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
                                 </div>
                                 <div class="d-none" data-nav-auth>
                                         <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
                                         <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
                                         <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
-                                        <a class="nav-link d-inline" href="{% url 'web-contact' %}">Contact</a>
                                         <a class="nav-link d-inline p-0" href="{% url 'web-profile' %}"
                                                 style="vertical-align: middle;">
                                                 <img src="{% static 'images/default-avatar.png' %}" alt="Profile"
@@ -66,13 +64,51 @@
                         <h3>Feeding a Campus, Building a Community</h3>
                 </div>
         </section>
-        <section class="container">
+        <section class="container my-5">
                 <div class="row justify-content-center">
-                        <div class="col-sm-6">
-                                <!-- TODO: INSERT CAMPUS PHOTO -->
-                                <p>
-                                        <!-- TODO: INSERT DESCRIPTION -->
-                                </p>
+                        <div class="col-sm-8">
+                                <!-- About Content -->
+                                <div class="mb-5">
+                                        <h3 class="mb-4">About CampusBites</h3>
+                                        <!-- TODO: INSERT CAMPUS PHOTO -->
+                                        <p>
+                                                <!-- TODO: INSERT DESCRIPTION -->
+                                                CampusBites is your campus community platform for discovering and sharing food events. 
+                                                Connect with fellow students, find free food on campus, and never miss out on campus dining opportunities.
+                                        </p>
+                                </div>
+
+                                <!-- Contact Form -->
+                                <div class="card shadow-sm rounded-3 p-4">
+                                        <h3 class="mb-4">Contact Us</h3>
+                                        <form action="/submit-form" method="post">
+                                                {% csrf_token %}
+                                                <!-- Name input -->
+                                                <div class="mb-3">
+                                                        <label for="name" class="form-label">Name</label>
+                                                        <input type="text" class="form-control" id="name" name="name"
+                                                                placeholder="Name" required>
+                                                </div>
+
+                                                <!-- Email input -->
+                                                <div class="mb-3">
+                                                        <label for="email" class="form-label">Email</label>
+                                                        <input type="email" class="form-control" id="email" name="email"
+                                                                placeholder="email@example.com" required>
+                                                </div>
+
+                                                <!-- Message text -->
+                                                <div class="mb-3">
+                                                        <label for="message" class="form-label">Message</label>
+                                                        <textarea class="form-control" id="message" name="message" rows="4"
+                                                                placeholder="Message..." required></textarea>
+                                                </div>
+
+                                                <!-- Submit button -->
+                                                <!-- TODO: CURRENTLY FORM CONTENT GOES NOWHERE-->
+                                                <button type="submit" class="btn btn-primary w-100">Submit</button>
+                                        </form>
+                                </div>
                         </div>
                 </div>
         </section>
