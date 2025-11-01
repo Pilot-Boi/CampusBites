@@ -65,6 +65,17 @@ nav {
 	align-items: center;
 }
 
+/* Hide navigation divs until JS determines which to show */
+header [data-nav-auth],
+header [data-nav-guest] {
+	visibility: hidden;
+}
+
+header [data-nav-auth]:not(.d-none),
+header [data-nav-guest]:not(.d-none) {
+	visibility: visible;
+}
+
 /* Header navigation links */
 header a,
 header .nav-link {
@@ -362,7 +373,6 @@ a span:hover {
 
 .card:hover {
 	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-	transform: translateY(-2px);
 }
 
 .card-header {
