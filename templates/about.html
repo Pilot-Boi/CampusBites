@@ -65,20 +65,34 @@
                 </div>
         </section>
         <section class="container my-5">
-                <div class="row justify-content-center">
-                        <div class="col-sm-8">
-                                <!-- About Content -->
-                                <div class="mb-5">
-                                        <h3 class="mb-4">About CampusBites</h3>
-                                        <!-- TODO: INSERT CAMPUS PHOTO -->
-                                        <p>
-                                                <!-- TODO: INSERT DESCRIPTION -->
-                                                CampusBites is your campus community platform for discovering and sharing food events. 
-                                                Connect with fellow students, find free food on campus, and never miss out on campus dining opportunities.
-                                        </p>
-                                </div>
+                <div class="row">
+                        <!-- About Content - Left Side -->
+                        <div class="col-md-6">
+                                <h3 class="mb-4">About CampusBites</h3>
+                                <!-- TODO: INSERT CAMPUS PHOTO -->
+                                <p class="mb-3">
+                                        CampusBites is your campus community platform for discovering and sharing food events. 
+                                        Connect with fellow students, find free food on campus, and never miss out on campus dining opportunities.
+                                </p>
+                                <p class="mb-3">
+                                        College is hard enough - between classes, assignments, extracurriculars, and trying to maintain a social life, 
+                                        keeping track of where and when free food is available shouldn't add to the stress. As fellow students, our goal 
+                                        is to make campus life a little easier and a lot more delicious.
+                                </p>
+                                <p class="mb-3">
+                                        We understand that student budgets are tight and campus dining can be expensive. That's why we created CampusBites - 
+                                        to help you discover club meetings with pizza, department events with catering, and all those hidden opportunities 
+                                        for free food across campus. More than just saving money, it's about building community and making sure no student 
+                                        goes hungry.
+                                </p>
+                                <p>
+                                        Join our community today and never miss another campus food event. Because good food brings people together, 
+                                        and together we can make campus life better for everyone.
+                                </p>
+                        </div>
 
-                                <!-- Contact Form -->
+                        <!-- Contact Form - Right Side -->
+                        <div class="col-md-6">
                                 <div class="card shadow-sm rounded-3 p-4">
                                         <h3 class="mb-4">Contact Us</h3>
                                         <form action="/submit-form" method="post">
@@ -100,7 +114,7 @@
                                                 <!-- Message text -->
                                                 <div class="mb-3">
                                                         <label for="message" class="form-label">Message</label>
-                                                        <textarea class="form-control" id="message" name="message" rows="4"
+                                                        <textarea class="form-control" id="message" name="message" rows="6"
                                                                 placeholder="Message..." required></textarea>
                                                 </div>
 
