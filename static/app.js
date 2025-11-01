@@ -218,6 +218,75 @@
         }
     }
 
+    // ---- My Events (profile_my_events.html) ----
+    async function loadMyEventsUI() {
+        const listContainer = document.querySelector('[data-my-events-list]');
+        const alerts = document.querySelector('[data-my-events-alerts]');
+        if (!listContainer) return; // not on page
+
+        async function refresh() {
+            listContainer.innerHTML = '<p class="text-muted mb-0">Loading your events…</p>';
+            try {
+                const resp = await apiFetch(`${EVENTS_ENDPOINT}?mine=1`);
+                if (!resp.ok) throw new Error('Failed to fetch my events');
+                const payload = await resp.json();
+                const events = Array.isArray(payload) ? payload : (payload.results || []);
+                listContainer.innerHTML = '';
+                if (!events.length) {
+                    listContainer.innerHTML = '<p class="text-muted mb-0">You haven\'t created any events yet.</p>';
+                    return;
+                }
+
+                events.forEach(ev => {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-2';
+                    card.innerHTML = `
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${ev.title}</h6>
+                                <small class="text-muted">${formatDateTime(ev.start_time)}${ev.end_time ? ' – ' + formatDateTime(ev.end_time) : ''}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/create/" class="btn btn-outline-secondary btn-edit" disabled>Edit</a>
+                                <button class="btn btn-outline-danger" data-delete-event data-id="${ev.id}">Delete</button>
+                            </div>
+                        </div>`;
+                    listContainer.appendChild(card);
+                });
+
+                // Bind deletes
+                listContainer.querySelectorAll('[data-delete-event]').forEach(btn => {
+                    if (btn.dataset.bound === 'true') return;
+                    btn.dataset.bound = 'true';
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        const label = btn.textContent;
+                        btn.disabled = true; btn.textContent = 'Deleting…';
+                        try {
+                            const del = await apiFetch(`${EVENTS_ENDPOINT}${id}/`, { method: 'DELETE' });
+                            if (del.status !== 204) {
+                                const data = await del.json().catch(() => ({}));
+                                showAlert(alerts, flattenErrors(data) || 'Unable to delete event.', 'danger');
+                            } else {
+                                await refresh();
+                                showAlert(alerts, 'Event deleted.', 'success');
+                            }
+                        } catch (e) {
+                            showAlert(alerts, 'Unable to delete event.', 'danger');
+                        } finally {
+                            btn.disabled = false; btn.textContent = label;
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error(err);
+                showAlert(alerts, 'Unable to load your events right now.', 'danger');
+            }
+        }
+
+        await refresh();
+    }
+
     // ---- Friends UI (profile_friends.html) ----
     async function loadFriendsUI() {
         const friendsList = document.querySelector("[data-friends-list]");
@@ -505,6 +574,7 @@
                 password: form.querySelector("[name='password']").value,
                 first_name: form.querySelector("[name='first_name']")?.value || "",
                 last_name: form.querySelector("[name='last_name']")?.value || "",
+                    is_organizer: form.querySelector("[name='is_organizer']")?.checked || false,
             };
 
             try {
@@ -564,6 +634,79 @@
         const roleDisplay = document.querySelector("[data-profile-role]");
         if (roleDisplay) {
             roleDisplay.textContent = profile.is_organizer ? "Organizer" : "Guest";
+        }
+
+        // Organizer controls on settings page
+        const becomeOrganizerBtn = document.querySelector("[data-become-organizer]");
+        const resignOrganizerBtn = document.querySelector("[data-resign-organizer]");
+        const organizerStatus = document.querySelector("[data-organizer-status]");
+        if (becomeOrganizerBtn) {
+            // Initialize UI based on current role
+            if (profile.is_organizer) {
+                becomeOrganizerBtn.classList.add('d-none');
+                if (resignOrganizerBtn) resignOrganizerBtn.classList.remove('d-none');
+                if (organizerStatus) organizerStatus.textContent = "You are currently an organizer.";
+            } else {
+                becomeOrganizerBtn.classList.remove('d-none');
+                if (resignOrganizerBtn) resignOrganizerBtn.classList.add('d-none');
+                if (organizerStatus) organizerStatus.textContent = "You are currently a guest.";
+
+                if (becomeOrganizerBtn.dataset.bound !== 'true') {
+                    becomeOrganizerBtn.dataset.bound = 'true';
+                    becomeOrganizerBtn.addEventListener('click', async () => {
+                        const prevText = becomeOrganizerBtn.textContent;
+                        becomeOrganizerBtn.disabled = true;
+                        becomeOrganizerBtn.textContent = 'Updating...';
+                        try {
+                            const resp = await apiFetch(PROFILE_ENDPOINT, {
+                                method: 'PATCH',
+                                body: { is_organizer: true },
+                            });
+                            if (!resp.ok) {
+                                const data = await resp.json().catch(() => ({}));
+                                showAlert(alerts, flattenErrors(data), 'danger');
+                                return;
+                            }
+                            // Update local UI
+                            showAlert(alerts, 'You are now an organizer! You can create events.', 'success');
+                            if (organizerStatus) organizerStatus.textContent = "You are currently an organizer.";
+                            becomeOrganizerBtn.classList.add('d-none');
+                            if (roleDisplay) roleDisplay.textContent = 'Organizer';
+                        } catch (err) {
+                            console.error('Failed to become organizer', err);
+                            showAlert(alerts, 'Unable to update organizer status. Please try again.', 'danger');
+                        } finally {
+                            becomeOrganizerBtn.disabled = false;
+                            becomeOrganizerBtn.textContent = prevText;
+                        }
+                    });
+                }
+            }
+        }
+
+        if (resignOrganizerBtn && resignOrganizerBtn.dataset.bound !== 'true') {
+            resignOrganizerBtn.dataset.bound = 'true';
+            resignOrganizerBtn.addEventListener('click', async () => {
+                const prev = resignOrganizerBtn.textContent;
+                resignOrganizerBtn.disabled = true; resignOrganizerBtn.textContent = 'Updating...';
+                try {
+                    const resp = await apiFetch(PROFILE_ENDPOINT, { method: 'PATCH', body: { is_organizer: false } });
+                    if (!resp.ok) {
+                        const data = await resp.json().catch(() => ({}));
+                        showAlert(alerts, flattenErrors(data), 'danger');
+                        return;
+                    }
+                    showAlert(alerts, 'You are now a guest. You can no longer create events.', 'info');
+                    if (organizerStatus) organizerStatus.textContent = 'You are currently a guest.';
+                    if (becomeOrganizerBtn) becomeOrganizerBtn.classList.remove('d-none');
+                    resignOrganizerBtn.classList.add('d-none');
+                    if (roleDisplay) roleDisplay.textContent = 'Guest';
+                } catch (e) {
+                    showAlert(alerts, 'Unable to update organizer status.', 'danger');
+                } finally {
+                    resignOrganizerBtn.disabled = false; resignOrganizerBtn.textContent = prev;
+                }
+            });
         }
 
         // Handle profile overview (read-only)
@@ -991,6 +1134,7 @@
         }
 
         await loadEventsList();
+    await loadMyEventsUI();
         await loadFriendsUI();
         await loadMessagesUI();
         initFriendsTabs();

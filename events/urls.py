@@ -25,6 +25,7 @@ from .frontend_views import (
     prof_friends_send_page,
     prof_friends_incoming_page,
     prof_messages_page,
+    my_events_page,
     register_page,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -52,6 +53,7 @@ urlpatterns = [
     path("profile/friends/send/", prof_friends_send_page, name="web-profile-friends-send"),
     path("profile/friends/incoming/", prof_friends_incoming_page, name="web-profile-friends-incoming"),
     path("profile/messages/", prof_messages_page, name="web-profile-messages"),
+    path("profile/my-events/", my_events_page, name="web-my-events"),
     path("api/", include(router.urls)),
     path("api/auth/login/", LoginView.as_view(), name="api-login"),
     path("api/auth/logout/", LogoutView.as_view(), name="api-logout"),

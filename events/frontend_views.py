@@ -37,6 +37,9 @@ def prof_friends_incoming_page(request):
 def prof_messages_page(request):
     return render(request, "profile_messages.html")
 
+def my_events_page(request):
+    return render(request, "profile_my_events.html")
+
 def contact_page(request):
     return render(request, "contact.html")
 

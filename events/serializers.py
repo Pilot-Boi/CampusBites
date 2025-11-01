@@ -37,16 +37,22 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    is_organizer = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "first_name", "last_name"]
+        fields = ["username", "email", "password", "first_name", "last_name", "is_organizer"]
 
     def create(self, validated_data):
         pwd = validated_data.pop("password")
+        is_organizer = validated_data.pop("is_organizer", False)
         user = User.objects.create(**validated_data)
         user.set_password(pwd)
         user.save()
+        # Update the profile's is_organizer field
+        if hasattr(user, 'profile'):
+            user.profile.is_organizer = is_organizer
+            user.profile.save()
         return user
 
 

@@ -120,7 +120,8 @@ def haversine_km(lat1, lon1, lat2, lon2):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticated, IsOrganizerOrReadOnly]
+    # Write operations require organizer; object writes require owner or staff
+    permission_classes = [IsOrganizerOrReadOnly & IsOwnerOrganizerOrReadOnly]
 
     def perform_create(self, serializer):
         """Set the created_by field to the current user when creating an event."""
@@ -135,6 +136,8 @@ class EventViewSet(viewsets.ModelViewSet):
         near_lat = self.request.query_params.get("lat")
         near_lon = self.request.query_params.get("lon")
         radius_km = float(self.request.query_params.get("radius_km", "25.0"))
+        mine = self.request.query_params.get("mine")
+        created_by = self.request.query_params.get("created_by")
 
         if q:
             qs = qs.filter(
@@ -149,6 +152,16 @@ class EventViewSet(viewsets.ModelViewSet):
             qs = qs.filter(start_time__gte=date_from)
         if date_to:
             qs = qs.filter(start_time__lte=date_to)
+
+        # filter by creator
+        user = getattr(self.request, "user", None)
+        if mine in {"1", "true", "True"} and user and getattr(user, "is_authenticated", False):
+            qs = qs.filter(created_by=user)
+        if created_by:
+            try:
+                qs = qs.filter(created_by_id=int(created_by))
+            except ValueError:
+                pass
 
         # annotate RSVP counts
         qs = qs.annotate(

@@ -430,6 +430,11 @@ section .row img {
 	transform: translateY(-2px);
 }
 
+/* Edit button hover: force black text */
+.btn-edit:hover {
+	color: #000 !important;
+}
+
 .btn-secondary {
 	background: #FC5130;
 	color: #fff;

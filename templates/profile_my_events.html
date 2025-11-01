@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>CampusBites</title>
+    <meta charset="utf-8" />
+    <script>
+        (function(){
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') { document.documentElement.classList.add('dark-mode'); }
+        })();
+    </script>
+    <style>
+        html.dark-mode { background-color: #1a1a1a !important; }
+        html.dark-mode body { background-color: #1a1a1a !important; color: #e0e0e0 !important; min-height: 100vh !important; }
+        html.dark-mode .bg-light { background-color: #2a2a2a !important; color: #e0e0e0 !important; }
+        html.dark-mode .page-hero { background-color: #2a2a2a !important; color: #e0e0e0 !important; }
+        html.dark-mode .page-hero h2, html.dark-mode .page-hero h3 { color: #e0e0e0 !important; }
+        html.dark-mode .sidebar-panel { background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%) !important; }
+        html.dark-mode .card, html.dark-mode body .card { background-color: #1a1a1a !important; color: #e0e0e0 !important; border: 1px solid #3a3a3a !important; }
+        html.dark-mode .form-control, html.dark-mode body .form-control { background-color: #333 !important; color: #e0e0e0 !important; border-color: #3a3a3a !important; }
+        html.dark-mode .list-group-item { background-color: #1a1a1a !important; color: #e0e0e0 !important; border-color: #3a3a3a !important; }
+        html.dark-mode .card-footer { background-color: #1a1a1a !important; color: #e0e0e0 !important; border-top: 1px solid #3a3a3a !important; }
+    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+<body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+<header class="mb-4">
+    <div class="container-fluid px-5">
+        <div class="row align-items-center">
+            <div class="col-sm-6"><h1>CampusBites</h1></div>
+            <div class="col-sm-6">
+                <nav class="text-right">
+                    <div data-nav-guest>
+                        <a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+                        <a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                    </div>
+                    <div class="d-none" data-nav-auth>
+                        <a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+                        <a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+                        <a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+                        <a class="nav-link d-inline p-0" href="{% url 'web-profile' %}" style="vertical-align: middle;">
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Profile" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" data-profile-picture>
+                            <span class="nav-link d-inline font-weight-bold" data-nav-username></span>
+                        </a>
+                        <button type="button" class="btn btn-link nav-link d-inline text-danger p-0 align-baseline" data-logout-button data-logout-redirect="{% url 'web-login' %}">Logout</button>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+<section class="page-hero py-3">
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar-panel sidebar shadow-sm rounded p-3">
+                <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
+                <ul class="nav flex-column nav-pills">
+                    <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile' %}">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-settings' %}">Settings</a></li>
+                    <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-friends' %}">Friends</a></li>
+                    <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-messages' %}">Messages</a></li>
+                    <li class="nav-item"><span class="nav-link active">My Events</span></li>
+                </ul>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-outline-danger btn-block w-100" data-logout-button data-logout-redirect="{% url 'web-login' %}">Log out</button>
+                </div>
+            </nav>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 profile-main">
+                <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h2 class="mb-0">My Events</h2>
+                    <a href="{% url 'web-create-event' %}" class="btn btn-primary btn-sm">Create Event</a>
+                </div>
+                <div data-my-events-alerts></div>
+                <div class="card shadow-sm rounded-3 p-3 mb-3">
+                    <h5 class="mb-3">Events you've created</h5>
+                    <div data-my-events-list>
+                        <p class="text-muted mb-0">Loading your events…</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</section>
+<footer>
+    <div class="container-fluid px-5"><div class="row"><p class="col-sm-4">&copy; 2025 CampusBites</p></div></div>
+</footer>
+<script src="{% static 'app.js' %}"></script>
+</body>
+</html>

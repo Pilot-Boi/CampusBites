@@ -135,6 +135,9 @@
                                                         <a class="nav-link disactive"
                                                                 href="{% url 'web-profile-messages' %}">Messages</a>
                                                 </li>
+                                                <li class="nav-item">
+                                                        <a class="nav-link disactive" href="{% url 'web-my-events' %}">My Events</a>
+                                                </li>
                                         </ul>
                                         <div class="mt-4">
                                                 <button type="button" class="btn btn-outline-danger btn-block w-100"
@@ -248,6 +251,17 @@
                                                                 <button type="button"
                                                                         class="btn btn-primary btn-sm mt-2"
                                                                         data-save-about>Save About Me</button>
+                                                        </div>
+                                                </div>
+
+                                                <!-- Organizer Section -->
+                                                <div class="card shadow-sm rounded-3 p-4 mb-3" data-organizer-section>
+                                                        <h5 class="mb-2">Organizer</h5>
+                                                        <p class="text-muted mb-2">Organizers can create and manage events. Guests can browse and RSVP.</p>
+                                                        <div>
+                                                                <button type="button" class="btn btn-success btn-sm" data-become-organizer>Become an organizer</button>
+                                                                <button type="button" class="btn btn-outline-secondary btn-sm d-none" data-resign-organizer>Resign organizer</button>
+                                                                <small class="text-muted d-block mt-2" data-organizer-status></small>
                                                         </div>
                                                 </div>
 
