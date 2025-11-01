@@ -88,21 +88,45 @@
                                                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                                                 <h2>Messages</h2>
                                         </div>
-                                        <div data-profile-alerts></div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Account Details</h5>
-                                                <dl class="row mb-0">
-                                                        <dt class="col-sm-4">Username</dt>
-                                                        <dd class="col-sm-8" data-profile-username></dd>
-                                                        <dt class="col-sm-4">Email</dt>
-                                                        <dd class="col-sm-8" data-profile-email>Not provided</dd>
-                                                        <dt class="col-sm-4">Role</dt>
-                                                        <dd class="col-sm-8" data-profile-role>Guest</dd>
-                                                </dl>
-                                        </div>
-                                        <div class="card shadow-sm rounded-3 p-4">
-                                                <p class="text-muted">This is where your profile content, settings, or
-                                                        dashboard widgets would appear.</p>
+                                        <div data-messages-alerts></div>
+                                        
+                                        <!-- Messages Interface -->
+                                        <div class="row">
+                                                <!-- Conversations List -->
+                                                <div class="col-md-4 mb-3">
+                                                        <div class="card shadow-sm rounded-3" style="height: 600px;">
+                                                                <div class="card-header bg-white border-bottom">
+                                                                        <h5 class="mb-0">Conversations</h5>
+                                                                        <input type="search" class="form-control form-control-sm mt-2" placeholder="Search conversations..." data-conversations-filter>
+                                                                </div>
+                                                                <div class="card-body p-0 overflow-auto" style="max-height: 540px;">
+                                                                        <ul class="list-group list-group-flush" data-conversations-list>
+                                                                                <li class="list-group-item text-muted text-center">No conversations yet.</li>
+                                                                        </ul>
+                                                                </div>
+                                                        </div>
+                                                </div>
+
+                                                <!-- Message Thread -->
+                                                <div class="col-md-8 mb-3">
+                                                        <div class="card shadow-sm rounded-3" style="height: 600px; display: flex; flex-direction: column;">
+                                                                <div class="card-header bg-white border-bottom">
+                                                                        <h5 class="mb-0" data-thread-header>Select a conversation</h5>
+                                                                </div>
+                                                                <div class="card-body overflow-auto flex-grow-1 p-3" style="background: #f8f9fa;" data-message-thread>
+                                                                        <div class="text-center text-muted mt-5">
+                                                                                <p>Select a friend from the left to start messaging</p>
+                                                                        </div>
+                                                                </div>
+                                                                <div class="card-footer bg-white border-top d-none" data-message-form-container>
+                                                                        <form class="d-flex align-items-center" data-message-form>
+                                                                                <input type="hidden" name="recipient_id" data-recipient-id>
+                                                                                <textarea class="form-control form-control-sm mr-2" name="message" rows="1" placeholder="Type your message..." style="resize: none; overflow-y: auto; max-height: 80px;" data-message-input></textarea>
+                                                                                <button type="submit" class="btn btn-primary btn-sm">Send</button>
+                                                                        </form>
+                                                                </div>
+                                                        </div>
+                                                </div>
                                         </div>
                                 </main>
                         </div>

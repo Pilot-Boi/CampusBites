@@ -19,7 +19,7 @@
         <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 </head>
 
-<body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+<body data-require-auth="true" data-login-url="{% url 'web-login' %}" data-friends-default-tab="{{ friends_default_tab|default:'list' }}">
         <header class="container mb-4">
                 <div class="row">
                         <h1 class="col-sm-6">CampusBites</h1>
@@ -87,23 +87,60 @@
                                 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 profile-main">
                                         <div
                                                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                                                <h2>Friends</h2>
+                                                <h2 class="mb-0">Friends</h2>
                                         </div>
+                                        <!-- Sub-tabs for Friends -->
+                                        <ul class="nav nav-pills mb-3" role="tablist" data-friends-tabs>
+                                                <li class="nav-item" role="presentation">
+                                                        <a href="{% url 'web-profile-friends' %}" class="nav-link{% if friends_default_tab == 'list' %} active{% endif %}" data-friends-tab-target="list" role="tab" aria-controls="friends-list" aria-selected="{% if friends_default_tab == 'list' %}true{% else %}false{% endif %}">Your Friends</a>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                        <a href="{% url 'web-profile-friends-send' %}" class="nav-link{% if friends_default_tab == 'send' %} active{% endif %}" data-friends-tab-target="send" role="tab" aria-controls="friends-send" aria-selected="{% if friends_default_tab == 'send' %}true{% else %}false{% endif %}">Send Request</a>
+                                                </li>
+                                                <li class="nav-item" role="presentation">
+                                                        <a href="{% url 'web-profile-friends-incoming' %}" class="nav-link{% if friends_default_tab == 'incoming' %} active{% endif %}" data-friends-tab-target="incoming" role="tab" aria-controls="friends-incoming" aria-selected="{% if friends_default_tab == 'incoming' %}true{% else %}false{% endif %}">Incoming Requests</a>
+                                                </li>
+                                        </ul>
                                         <div data-profile-alerts></div>
-                                        <div class="card shadow-sm rounded-3 p-4 mb-3">
-                                                <h5 class="mb-3">Account Details</h5>
-                                                <dl class="row mb-0">
-                                                        <dt class="col-sm-4">Username</dt>
-                                                        <dd class="col-sm-8" data-profile-username></dd>
-                                                        <dt class="col-sm-4">Email</dt>
-                                                        <dd class="col-sm-8" data-profile-email>Not provided</dd>
-                                                        <dt class="col-sm-4">Role</dt>
-                                                        <dd class="col-sm-8" data-profile-role>Guest</dd>
-                                                </dl>
+                                        <!-- Your Friends -->
+                                        <div id="friends-list" class="card shadow-sm rounded-3 p-4 mb-3{% if friends_default_tab != 'list' %} d-none{% endif %}" data-friends-pane="list" role="tabpanel" aria-labelledby="friends-list-tab">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <h5 class="mb-0">Your Friends</h5>
+                                                        <input type="search" class="form-control form-control-sm" style="max-width: 240px;" placeholder="Search friends…" data-friends-filter>
+                                                </div>
+                                                <div data-friends-alerts></div>
+                                                <ul class="list-group" data-friends-list>
+                                                        <li class="list-group-item text-muted">No friends yet.</li>
+                                                </ul>
                                         </div>
-                                        <div class="card shadow-sm rounded-3 p-4">
-                                                <p class="text-muted">This is where your profile content, settings, or
-                                                        dashboard widgets would appear.</p>
+
+                                        <!-- Send Friend Request -->
+                                        <div id="friends-send" class="card shadow-sm rounded-3 p-4 mb-3{% if friends_default_tab != 'send' %} d-none{% endif %}" data-friends-pane="send" role="tabpanel" aria-labelledby="friends-send-tab">
+                                                <h5 class="mb-3">Send Friend Request</h5>
+                                                <div data-friend-send-alerts></div>
+                                                <form class="row gx-2 gy-2 align-items-center" data-friend-request-form>
+                                                        <div class="col-sm-6">
+                                                                <label class="sr-only" for="friend-username">Username</label>
+                                                                <input id="friend-username" type="text" class="form-control" name="username" placeholder="Friend's username">
+                                                        </div>
+                                                        <div class="col-sm-6 col-md-4">
+                                                                <label class="sr-only" for="friend-email">Email (optional)</label>
+                                                                <input id="friend-email" type="email" class="form-control" name="email" placeholder="Email (optional)">
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-2">
+                                                                <button type="submit" class="btn btn-primary btn-block w-100">Send</button>
+                                                        </div>
+                                                </form>
+                                                <small class="text-muted d-block mt-2">You can enter a username, an email, or both.</small>
+                                        </div>
+
+                                        <!-- Incoming Requests -->
+                                        <div id="friends-incoming" class="card shadow-sm rounded-3 p-4 mb-3{% if friends_default_tab != 'incoming' %} d-none{% endif %}" data-friends-pane="incoming" role="tabpanel" aria-labelledby="friends-incoming-tab">
+                                                <h5 class="mb-3">Incoming Requests</h5>
+                                                <div data-friend-incoming-alerts></div>
+                                                <ul class="list-group" data-incoming-requests>
+                                                        <li class="list-group-item text-muted">No pending requests.</li>
+                                                </ul>
                                         </div>
                                 </main>
                         </div>

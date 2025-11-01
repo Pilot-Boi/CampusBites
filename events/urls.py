@@ -22,6 +22,8 @@ from .frontend_views import (
     profile_page,
     prof_settings_page,
     prof_friends_page,
+    prof_friends_send_page,
+    prof_friends_incoming_page,
     prof_messages_page,
     register_page,
 )
@@ -47,6 +49,8 @@ urlpatterns = [
     path("profile/", profile_page, name="web-profile"),
     path("profile/settings/", prof_settings_page, name="web-profile-settings"),
     path("profile/friends/", prof_friends_page, name="web-profile-friends"),
+    path("profile/friends/send/", prof_friends_send_page, name="web-profile-friends-send"),
+    path("profile/friends/incoming/", prof_friends_incoming_page, name="web-profile-friends-incoming"),
     path("profile/messages/", prof_messages_page, name="web-profile-messages"),
     path("api/", include(router.urls)),
     path("api/auth/login/", LoginView.as_view(), name="api-login"),

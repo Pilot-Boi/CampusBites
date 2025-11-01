@@ -26,7 +26,13 @@ def prof_settings_page(request):
     return render(request, "profile_settings.html")
 
 def prof_friends_page(request):
-    return render(request, "profile_friends.html")
+    return render(request, "profile_friends.html", {"friends_default_tab": "list"})
+
+def prof_friends_send_page(request):
+    return render(request, "profile_friends.html", {"friends_default_tab": "send"})
+
+def prof_friends_incoming_page(request):
+    return render(request, "profile_friends.html", {"friends_default_tab": "incoming"})
 
 def prof_messages_page(request):
     return render(request, "profile_messages.html")

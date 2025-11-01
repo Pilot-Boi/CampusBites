@@ -4,6 +4,12 @@
     const LOGOUT_ENDPOINT = `${API_ROOT}/auth/logout/`;
     const PROFILE_ENDPOINT = `${API_ROOT}/profiles/me/`;
     const EVENTS_ENDPOINT = `${API_ROOT}/events/`;
+    // Friends (future API; UI degrades gracefully if not available)
+    const FRIENDS_ENDPOINT = `${API_ROOT}/friends/`;
+    const FRIEND_REQUESTS_ENDPOINT = `${API_ROOT}/friend-requests/`;
+    // Messages (future API; UI degrades gracefully if not available)
+    const CONVERSATIONS_ENDPOINT = `${API_ROOT}/conversations/`;
+    const MESSAGES_ENDPOINT = `${API_ROOT}/messages/`;
     const SIGNUP_ENDPOINT = `${API_ROOT}/signup/`;
 
     function apiFetch(url, options = {}) {
@@ -212,6 +218,226 @@
         }
     }
 
+    // ---- Friends UI (profile_friends.html) ----
+    async function loadFriendsUI() {
+        const friendsList = document.querySelector("[data-friends-list]");
+        const incomingList = document.querySelector("[data-incoming-requests]");
+        const sendForm = document.querySelector("[data-friend-request-form]");
+        const friendsAlerts = document.querySelector("[data-friends-alerts]");
+        const incomingAlerts = document.querySelector("[data-friend-incoming-alerts]");
+        const sendAlerts = document.querySelector("[data-friend-send-alerts]");
+        const filterInput = document.querySelector("[data-friends-filter]");
+
+        // Exit early if not on the friends page
+        if (!friendsList && !incomingList && !sendForm) {
+            return;
+        }
+
+        function renderFriendItem(friend) {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex align-items-center justify-content-between";
+            const name = typeof friend === "string" ? friend : (friend.username || friend.name || friend.email || "Friend");
+            const left = document.createElement("div");
+            left.className = "d-flex align-items-center";
+            const avatar = document.createElement("img");
+            avatar.className = "rounded-circle mr-2";
+            avatar.style.width = "28px";
+            avatar.style.height = "28px";
+            avatar.style.objectFit = "cover";
+            avatar.src = (friend.profile_picture) ? friend.profile_picture : 
+                (document.querySelector('[data-profile-picture]')?.src || 
+                    (document.querySelector('img[alt="Profile"]')?.src) || 
+                    "/static/images/default-avatar.png");
+            const label = document.createElement("span");
+            label.textContent = name;
+            left.appendChild(avatar);
+            left.appendChild(label);
+            li.appendChild(left);
+            return li;
+        }
+
+        async function refreshFriends() {
+            if (!friendsList) return;
+            friendsList.innerHTML = "";
+            try {
+                const resp = await apiFetch(FRIENDS_ENDPOINT);
+                if (!resp.ok) throw new Error("Friends API not available");
+                const payload = await resp.json();
+                const friends = Array.isArray(payload) ? payload : (payload.results || []);
+                if (!friends.length) {
+                    friendsList.innerHTML = '<li class="list-group-item text-muted">No friends yet.</li>';
+                    return;
+                }
+                friends.forEach(f => friendsList.appendChild(renderFriendItem(f)));
+            } catch (err) {
+                console.warn(err);
+                showAlert(friendsAlerts, "Friends features aren't enabled yet.", "info");
+                if (!friendsList.children.length) {
+                    friendsList.innerHTML = '<li class="list-group-item text-muted">No friends to show.</li>';
+                }
+            }
+        }
+
+        async function refreshIncoming() {
+            if (!incomingList) return;
+            incomingList.innerHTML = "";
+            try {
+                const resp = await apiFetch(`${FRIEND_REQUESTS_ENDPOINT}?status=pending&direction=incoming`);
+                if (!resp.ok) throw new Error("Friend requests API not available");
+                const payload = await resp.json();
+                const reqs = Array.isArray(payload) ? payload : (payload.results || []);
+                if (!reqs.length) {
+                    incomingList.innerHTML = '<li class="list-group-item text-muted">No pending requests.</li>';
+                    return;
+                }
+                reqs.forEach(r => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item d-flex align-items-center justify-content-between";
+                    const name = r.from_user?.username || r.username || r.email || "Unknown";
+                    li.innerHTML = `
+                        <span>${name}</span>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-success" data-approve-request data-id="${r.id}">Approve</button>
+                            <button type="button" class="btn btn-outline-secondary" data-decline-request data-id="${r.id}">Decline</button>
+                        </div>
+                    `;
+                    incomingList.appendChild(li);
+                });
+
+                // Bind approve/decline handlers
+                incomingList.querySelectorAll("[data-approve-request]").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const id = btn.dataset.id;
+                        try {
+                            const resp2 = await apiFetch(`${FRIEND_REQUESTS_ENDPOINT}${id}/approve/`, { method: "POST" });
+                            if (!resp2.ok) throw new Error();
+                            await refreshFriends();
+                            await refreshIncoming();
+                        } catch (e) {
+                            showAlert(incomingAlerts, "Unable to approve request (feature not enabled).", "warning");
+                        }
+                    });
+                });
+                incomingList.querySelectorAll("[data-decline-request]").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const id = btn.dataset.id;
+                        try {
+                            const resp2 = await apiFetch(`${FRIEND_REQUESTS_ENDPOINT}${id}/decline/`, { method: "POST" });
+                            if (!resp2.ok) throw new Error();
+                            await refreshIncoming();
+                        } catch (e) {
+                            showAlert(incomingAlerts, "Unable to decline request (feature not enabled).", "warning");
+                        }
+                    });
+                });
+            } catch (err) {
+                console.warn(err);
+                showAlert(incomingAlerts, "Friend requests aren't enabled yet.", "info");
+                if (!incomingList.children.length) {
+                    incomingList.innerHTML = '<li class="list-group-item text-muted">No pending requests.</li>';
+                }
+            }
+        }
+
+        // Send friend request form
+        if (sendForm) {
+            sendForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                clearAlerts(sendAlerts);
+                const submitBtn = sendForm.querySelector("button[type='submit']");
+                if (submitBtn) submitBtn.disabled = true;
+                const username = sendForm.querySelector("[name='username']")?.value?.trim();
+                const email = sendForm.querySelector("[name='email']")?.value?.trim();
+                if (!username && !email) {
+                    showAlert(sendAlerts, "Please enter a username or email.", "warning");
+                    if (submitBtn) submitBtn.disabled = false;
+                    return;
+                }
+                try {
+                    const resp = await apiFetch(FRIEND_REQUESTS_ENDPOINT, {
+                        method: "POST",
+                        body: { username, email }
+                    });
+                    if (!resp.ok) throw new Error();
+                    showAlert(sendAlerts, "Request sent!", "success");
+                    sendForm.reset();
+                } catch (err) {
+                    showAlert(sendAlerts, "Unable to send request (feature not enabled).", "warning");
+                } finally {
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // Client-side filter
+        if (filterInput && friendsList) {
+            filterInput.addEventListener("input", () => {
+                const q = filterInput.value.toLowerCase();
+                friendsList.querySelectorAll(".list-group-item").forEach(li => {
+                    const text = li.textContent.toLowerCase();
+                    li.style.display = text.includes(q) ? "" : "none";
+                });
+            });
+        }
+
+        // Initial loads
+        await refreshFriends();
+        await refreshIncoming();
+    }
+
+    // ---- Friends sub-tabs (client-side only) ----
+    function initFriendsTabs() {
+        const tabsContainer = document.querySelector('[data-friends-tabs]');
+        if (!tabsContainer) return; // not on friends page
+        const panes = document.querySelectorAll('[data-friends-pane]');
+        const links = tabsContainer.querySelectorAll('[data-friends-tab-target]');
+
+        function setActive(target) {
+            // toggle nav
+            links.forEach(a => {
+                const isActive = a.dataset.friendsTabTarget === target;
+                a.classList.toggle('active', isActive);
+                a.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            // toggle panes
+            panes.forEach(p => {
+                const show = p.dataset.friendsPane === target;
+                p.classList.toggle('d-none', !show);
+            });
+        }
+
+    // Initial from hash or body dataset
+    const hash = (window.location.hash || '').replace('#', '');
+    const dsDefault = document.body?.dataset?.friendsDefaultTab || 'list';
+    const initial = hash.startsWith('friends-') ? hash.replace('friends-', '') : dsDefault;
+        setActive(['list','send','incoming'].includes(initial) ? initial : 'list');
+
+        // Click handlers
+        links.forEach(a => {
+            a.addEventListener('click', (e) => {
+                const href = a.getAttribute('href') || '';
+                const target = a.dataset.friendsTabTarget;
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    if (!target) return;
+                    window.location.hash = `friends-${target}`;
+                    setActive(target);
+                } else {
+                    // let browser navigate to the route
+                }
+            });
+        });
+
+        // Hash change (back/forward support)
+        window.addEventListener('hashchange', () => {
+            const h = (window.location.hash || '').replace('#', '');
+            if (h.startsWith('friends-')) {
+                const t = h.replace('friends-', '');
+                setActive(['list','send','incoming'].includes(t) ? t : 'list');
+            }
+        });
+    }
+
     function bindLoginForm() {
         const form = document.querySelector("[data-login-form]");
         if (!form) {
@@ -412,6 +638,213 @@
         }
     }
 
+    // ---- Messages UI (profile_messages.html) ----
+    async function loadMessagesUI() {
+        const conversationsList = document.querySelector("[data-conversations-list]");
+        const messageThread = document.querySelector("[data-message-thread]");
+        const messageForm = document.querySelector("[data-message-form]");
+        const messageFormContainer = document.querySelector("[data-message-form-container]");
+        const threadHeader = document.querySelector("[data-thread-header]");
+        const conversationsFilter = document.querySelector("[data-conversations-filter]");
+        const messagesAlerts = document.querySelector("[data-messages-alerts]");
+        const messageInput = document.querySelector("[data-message-input]");
+
+        // Exit early if not on the messages page
+        if (!conversationsList || !messageThread || !messageForm) {
+            return;
+        }
+
+        let currentConversation = null;
+        let conversations = [];
+
+        function formatMessageTime(timestamp) {
+            if (!timestamp) return "";
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return "Just now";
+            if (diffMins < 60) return `${diffMins}m ago`;
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours}h ago`;
+            const diffDays = Math.floor(diffHours / 24);
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function renderConversationItem(conv) {
+            const li = document.createElement("li");
+            li.className = "list-group-item list-group-item-action";
+            li.style.cursor = "pointer";
+            li.dataset.conversationId = conv.id;
+            
+            const friendName = conv.friend?.username || conv.friend_username || conv.username || "Unknown";
+            const lastMsg = conv.last_message?.text || conv.last_message || "No messages yet";
+            const lastTime = formatMessageTime(conv.last_message?.timestamp || conv.updated_at);
+            const unreadCount = conv.unread_count || 0;
+            
+            li.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="${conv.friend?.profile_picture || '/static/images/default-avatar.png'}" 
+                             class="rounded-circle mr-2" 
+                             style="width: 40px; height: 40px; object-fit: cover;"
+                             alt="${friendName}">
+                        <div>
+                            <div class="font-weight-bold">${friendName}</div>
+                            <small class="text-muted text-truncate d-block" style="max-width: 180px;">${lastMsg}</small>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <small class="text-muted d-block">${lastTime}</small>
+                        ${unreadCount > 0 ? `<span class="badge badge-primary badge-pill">${unreadCount}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            li.addEventListener("click", () => loadConversation(conv));
+            return li;
+        }
+
+        function renderMessage(msg, isOwn) {
+            const div = document.createElement("div");
+            div.className = `mb-3 d-flex ${isOwn ? 'justify-content-end' : 'justify-content-start'}`;
+            
+            const bubble = document.createElement("div");
+            bubble.className = `p-2 rounded ${isOwn ? 'bg-primary text-white' : 'bg-white border'}`;
+            bubble.style.maxWidth = "70%";
+            
+            const text = document.createElement("p");
+            text.className = "mb-1";
+            text.textContent = msg.text || msg.message || "";
+            
+            const time = document.createElement("small");
+            time.className = isOwn ? "text-white-50" : "text-muted";
+            time.textContent = formatMessageTime(msg.timestamp || msg.created_at);
+            
+            bubble.appendChild(text);
+            bubble.appendChild(time);
+            div.appendChild(bubble);
+            
+            return div;
+        }
+
+        async function loadConversations() {
+            try {
+                const resp = await apiFetch(CONVERSATIONS_ENDPOINT);
+                if (!resp.ok) throw new Error("Conversations API not available");
+                const payload = await resp.json();
+                conversations = Array.isArray(payload) ? payload : (payload.results || []);
+                
+                conversationsList.innerHTML = "";
+                if (!conversations.length) {
+                    conversationsList.innerHTML = '<li class="list-group-item text-muted text-center">No conversations yet.</li>';
+                    return;
+                }
+                
+                conversations.forEach(conv => {
+                    conversationsList.appendChild(renderConversationItem(conv));
+                });
+            } catch (err) {
+                console.warn(err);
+                showAlert(messagesAlerts, "Messaging features aren't enabled yet.", "info");
+                conversationsList.innerHTML = '<li class="list-group-item text-muted text-center">No conversations to show.</li>';
+            }
+        }
+
+        async function loadConversation(conv) {
+            currentConversation = conv;
+            const friendName = conv.friend?.username || conv.friend_username || conv.username || "Unknown";
+            threadHeader.textContent = friendName;
+            messageThread.innerHTML = "";
+            messageFormContainer.classList.remove("d-none");
+            
+            document.querySelector("[data-recipient-id]").value = conv.friend?.id || conv.friend_id || "";
+            
+            try {
+                const resp = await apiFetch(`${MESSAGES_ENDPOINT}?conversation_id=${conv.id}`);
+                if (!resp.ok) throw new Error("Messages API not available");
+                const payload = await resp.json();
+                const messages = Array.isArray(payload) ? payload : (payload.results || []);
+                
+                if (!messages.length) {
+                    messageThread.innerHTML = '<div class="text-center text-muted mt-5"><p>No messages yet. Start the conversation!</p></div>';
+                    return;
+                }
+                
+                messages.forEach(msg => {
+                    const isOwn = msg.sender_id === conv.user_id || msg.is_own;
+                    messageThread.appendChild(renderMessage(msg, isOwn));
+                });
+                
+                // Scroll to bottom
+                messageThread.scrollTop = messageThread.scrollHeight;
+            } catch (err) {
+                console.warn(err);
+                messageThread.innerHTML = '<div class="text-center text-muted mt-5"><p>Unable to load messages (feature not enabled).</p></div>';
+            }
+        }
+
+        // Send message
+        if (messageForm) {
+            messageForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!currentConversation) return;
+                
+                const messageText = messageInput.value.trim();
+                if (!messageText) return;
+                
+                const submitBtn = messageForm.querySelector("button[type='submit']");
+                if (submitBtn) submitBtn.disabled = true;
+                
+                try {
+                    const resp = await apiFetch(MESSAGES_ENDPOINT, {
+                        method: "POST",
+                        body: {
+                            conversation_id: currentConversation.id,
+                            recipient_id: document.querySelector("[data-recipient-id]").value,
+                            text: messageText
+                        }
+                    });
+                    
+                    if (!resp.ok) throw new Error();
+                    
+                    const newMsg = await resp.json();
+                    messageThread.appendChild(renderMessage(newMsg, true));
+                    messageThread.scrollTop = messageThread.scrollHeight;
+                    messageInput.value = "";
+                    
+                    // Refresh conversations list to update last message
+                    await loadConversations();
+                } catch (err) {
+                    showAlert(messagesAlerts, "Unable to send message (feature not enabled).", "warning");
+                } finally {
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            });
+            
+            // Auto-resize textarea
+            messageInput?.addEventListener("input", function() {
+                this.style.height = "auto";
+                this.style.height = Math.min(this.scrollHeight, 80) + "px";
+            });
+        }
+
+        // Filter conversations
+        if (conversationsFilter) {
+            conversationsFilter.addEventListener("input", () => {
+                const q = conversationsFilter.value.toLowerCase();
+                conversationsList.querySelectorAll(".list-group-item").forEach(li => {
+                    const text = li.textContent.toLowerCase();
+                    li.style.display = text.includes(q) ? "" : "none";
+                });
+            });
+        }
+
+        // Initial load
+        await loadConversations();
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
         const authState = await initAuthUI();
 
@@ -425,6 +858,9 @@
         }
 
         await loadEventsList();
+        await loadFriendsUI();
+        await loadMessagesUI();
+        initFriendsTabs();
         populateProfile(authState);
         bindLoginForm();
         bindRegisterForm();
