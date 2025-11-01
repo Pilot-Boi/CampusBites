@@ -149,6 +149,13 @@
         });
     }
 
+    function formatDateOnly(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString(undefined, { dateStyle: 'medium' });
+    }
+
        function showEventDetailsModal(event) {
            const modalBody = document.getElementById('eventDetailsBody');
            const modalTitle = document.getElementById('eventDetailsModalLabel');
@@ -169,6 +176,19 @@
            const end = formatDateTime(event.end_time);
            timing.innerHTML = `<strong>When:</strong> ${end ? `${start} – ${end}` : start}`;
            content.appendChild(timing);
+           
+           // Organizer
+           if (event.created_by && event.created_by.username) {
+               const org = document.createElement('p');
+               org.className = 'mb-3';
+               org.innerHTML = '<strong>Organizer:</strong> ';
+               const a = document.createElement('a');
+               a.href = `/profile/?user=${event.created_by.id}`;
+               a.textContent = event.created_by.username;
+               a.className = 'organizer-link';
+               org.appendChild(a);
+               content.appendChild(org);
+           }
        
            // Location
            const location = document.createElement('p');
@@ -259,6 +279,15 @@
            btnClose.setAttribute('data-dismiss', 'modal');
            btnClose.textContent = 'Close';
            modalFooter.appendChild(btnClose);
+           
+           // View on Calendar (if already Going)
+           if (current === 'going') {
+               const calendarBtn = document.createElement('a');
+               calendarBtn.href = '/calendar/';
+               calendarBtn.className = 'btn btn-link';
+               calendarBtn.textContent = '📅 View on Calendar';
+               modalFooter.appendChild(calendarBtn);
+           }
        
            // Add RSVP click handlers
            [btnGoing, btnMaybe, btnNot].forEach(btn => {
@@ -325,7 +354,7 @@
 
                 // Card Header
                 const cardHeader = document.createElement("div");
-                cardHeader.className = "card-header";
+                cardHeader.className = "card-header d-flex justify-content-between align-items-center";
                 
                 const title = document.createElement("h5");
                 title.className = "mb-0";
@@ -338,182 +367,75 @@
                 
                 cardHeader.appendChild(title);
 
+                // Make entire header clickable as well
+                cardHeader.style.cursor = 'pointer';
+                cardHeader.addEventListener('click', (e) => {
+                    // Avoid double-trigger if child already handled
+                    if (e.target === cardHeader) {
+                        showEventDetailsModal(event);
+                    }
+                });
+
                 // Card Body
                 const cardBody = document.createElement("div");
                 cardBody.className = "card-body";
-
-                // Check if we have location data for map
-                const hasMap = event.latitude && event.longitude;
-                
-                // Create container for content layout
-                const contentContainer = document.createElement("div");
-                contentContainer.className = hasMap ? "row" : "";
-                
-                // Text content column
-                const textColumn = document.createElement("div");
-                textColumn.className = hasMap ? "col-md-7" : "";
-
+                // Only show the date/time in the card body; details are in the modal
                 const timing = document.createElement("p");
-                timing.className = "card-subtitle mb-2 text-muted";
-                const start = formatDateTime(event.start_time);
-                const end = formatDateTime(event.end_time);
-                timing.textContent = end ? `${start} – ${end}` : start;
-
-                const description = document.createElement("p");
-                description.className = "card-text";
-                description.textContent = event.description || "Details coming soon.";
-
-                const location = document.createElement("p");
-                location.className = "card-text mb-0";
-                location.textContent = event.location_name || event.address || "Location TBA";
-
-                const stats = document.createElement("p");
-                stats.className = "card-text mt-2 text-muted";
-                const going = event.going_count ?? 0;
-                const maybe = event.maybe_count ?? 0;
-                const notGoing = event.not_going_count ?? 0;
-                stats.textContent = `RSVPs — Going: ${going}, Maybe: ${maybe}, Not Going: ${notGoing}`;
-
-                // RSVP buttons
-                const btnGroup = document.createElement('div');
-                btnGroup.className = 'btn-group btn-group-sm mt-2';
-                btnGroup.setAttribute('role', 'group');
-
-                const current = event.my_rsvp; // 'going' | 'maybe' | 'not_going' | null
-                const btnGoing = document.createElement('button');
-                btnGoing.className = `btn ${current === 'going' ? 'btn-success' : 'btn-outline-success'}`;
-                btnGoing.textContent = 'Going';
-                btnGoing.dataset.rsvp = 'going';
-                btnGoing.dataset.eventId = event.id;
-
-                const btnMaybe = document.createElement('button');
-                btnMaybe.className = `btn ${current === 'maybe' ? 'btn-warning' : 'btn-outline-warning'}`;
-                btnMaybe.textContent = 'Maybe';
-                btnMaybe.dataset.rsvp = 'maybe';
-                btnMaybe.dataset.eventId = event.id;
-
-                const btnNot = document.createElement('button');
-                btnNot.className = `btn ${current === 'not_going' ? 'btn-secondary' : 'btn-outline-secondary'}`;
-                btnNot.textContent = 'Not Going';
-                btnNot.dataset.rsvp = 'not_going';
-                btnNot.dataset.eventId = event.id;
-
-                btnGroup.appendChild(btnGoing);
-                btnGroup.appendChild(btnMaybe);
-                btnGroup.appendChild(btnNot);
-
-                // Clear RSVP button (only shown if user has an RSVP)
-                const rsvpContainer = document.createElement('div');
-                rsvpContainer.className = 'd-flex align-items-center mt-2';
-                rsvpContainer.appendChild(btnGroup);
-
-                if (current) {
-                    const btnClear = document.createElement('button');
-                    btnClear.className = 'btn btn-sm btn-outline-danger ml-2';
-                    btnClear.textContent = 'Remove RSVP';
-                    btnClear.dataset.eventId = event.id;
-                    rsvpContainer.appendChild(btnClear);
-
-                    btnClear.addEventListener('click', async () => {
-                        const prev = btnClear.textContent;
-                        btnClear.disabled = true; btnClear.textContent = 'Removing…';
-                        try {
-                            // Find and delete the RSVP
-                            const rsvpResp = await apiFetch(`${API_ROOT}/rsvps/?event=${event.id}`);
-                            if (rsvpResp.ok) {
-                                const rsvps = await rsvpResp.json();
-                                const myRsvp = (Array.isArray(rsvps) ? rsvps : (rsvps.results || [])).find(r => r.event === event.id);
-                                if (myRsvp && myRsvp.id) {
-                                    const delResp = await apiFetch(`${API_ROOT}/rsvps/${myRsvp.id}/`, { method: 'DELETE' });
-                                    if (delResp.status === 204 || delResp.ok) {
-                                        await loadEventsList();
-                                    } else {
-                                        showAlert('[data-events-alerts]', 'Unable to clear RSVP.', 'danger');
-                                    }
-                                }
-                            }
-                        } catch (e) {
-                            showAlert('[data-events-alerts]', 'Unable to remove RSVP.', 'danger');
-                        } finally {
-                            btnClear.disabled = false; btnClear.textContent = prev;
-                        }
-                    });
-                }
-
-                // "View on Calendar" link (only shown if user is going)
-                if (current === 'going') {
-                    const calendarLink = document.createElement('a');
-                    calendarLink.href = '/calendar/';
-                    calendarLink.className = 'btn btn-sm btn-link ml-2';
-                    calendarLink.textContent = '📅 View on Calendar';
-                    rsvpContainer.appendChild(calendarLink);
-                }
-
-                textColumn.appendChild(timing);
-                textColumn.appendChild(description);
-                textColumn.appendChild(location);
-                textColumn.appendChild(stats);
-                textColumn.appendChild(rsvpContainer);
+                timing.className = "card-subtitle mb-1 text-muted";
                 
-                contentContainer.appendChild(textColumn);
+                // Check if event is on a single day
+                const startDate = new Date(event.start_time);
+                const endDate = event.end_time ? new Date(event.end_time) : null;
+                const isSameDay = endDate && 
+                    startDate.getFullYear() === endDate.getFullYear() &&
+                    startDate.getMonth() === endDate.getMonth() &&
+                    startDate.getDate() === endDate.getDate();
                 
-                // Map column (if location data exists)
-                if (hasMap) {
-                    const mapColumn = document.createElement("div");
-                    mapColumn.className = "col-md-5";
-                    
-                    const mapContainer = document.createElement("div");
-                    mapContainer.className = "embed-responsive embed-responsive-4by3";
-                    mapContainer.style.borderRadius = "8px";
-                    mapContainer.style.overflow = "hidden";
-                    
-                    const mapIframe = document.createElement("iframe");
-                    mapIframe.className = "embed-responsive-item";
-                    mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${event.latitude},${event.longitude}&zoom=15`;
-                    mapIframe.setAttribute("frameborder", "0");
-                    mapIframe.setAttribute("style", "border:0");
-                    mapIframe.setAttribute("allowfullscreen", "");
-                    mapIframe.setAttribute("loading", "lazy");
-                    
-                    mapContainer.appendChild(mapIframe);
-                    mapColumn.appendChild(mapContainer);
-                    contentContainer.appendChild(mapColumn);
+                if (isSameDay) {
+                    // Single day: show date on one line, time range below
+                    const dateStr = formatDateOnly(event.start_time);
+                    const startTime = startDate.toLocaleTimeString(undefined, { timeStyle: 'short' });
+                    const endTime = endDate.toLocaleTimeString(undefined, { timeStyle: 'short' });
+                    timing.innerHTML = `${dateStr}<br><small>${startTime} – ${endTime}</small>`;
+                } else {
+                    // Multi-day or no end: show date range as before
+                    const startDateStr = formatDateOnly(event.start_time);
+                    const endDateStr = formatDateOnly(event.end_time);
+                    const showRange = endDateStr && endDateStr !== startDateStr;
+                    timing.textContent = showRange ? `${startDateStr} – ${endDateStr}` : startDateStr;
                 }
                 
-                cardBody.appendChild(contentContainer);
+                cardBody.appendChild(timing);
+
+                // Organizer line
+                if (event.created_by && event.created_by.username) {
+                    const org = document.createElement('p');
+                    org.className = 'mb-1 small';
+                    const a = document.createElement('a');
+                    a.href = `/profile/?user=${event.created_by.id}`;
+                    a.textContent = event.created_by.username;
+                    a.className = 'organizer-link';
+                    a.addEventListener('click', (e) => { e.stopPropagation(); });
+                    org.innerHTML = '<strong>Organizer:</strong> ';
+                    org.appendChild(a);
+                    cardBody.appendChild(org);
+                }
+
+                // View details hint under date
+                const detailsRow = document.createElement('div');
+                detailsRow.className = 'small details-hint mt-1';
+                detailsRow.textContent = 'View details ›';
+                detailsRow.style.cursor = 'pointer';
+                detailsRow.addEventListener('click', () => showEventDetailsModal(event));
+                cardBody.appendChild(detailsRow);
+
+                // Make the whole card body open the modal for convenience
+                cardBody.style.cursor = "pointer";
+                cardBody.addEventListener('click', () => showEventDetailsModal(event));
                 
                 card.appendChild(cardHeader);
                 card.appendChild(cardBody);
                 listContainer.appendChild(card);
-
-                // Bind RSVP clicks
-                [btnGoing, btnMaybe, btnNot].forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const prev = btn.textContent;
-                        btn.disabled = true; btn.textContent = 'Saving…';
-                        try {
-                            const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
-                                method: 'POST',
-                                body: { event: event.id, status: btn.dataset.rsvp }
-                            });
-                            if (!resp.ok) {
-                                const data = await resp.json().catch(() => ({}));
-                                showAlert('[data-events-alerts]', flattenErrors(data) || 'Unable to save RSVP.', 'danger');
-                            } else {
-                                // Refresh the list so counts and selection update
-                                await loadEventsList();
-                                // Show success message for "Going" status
-                                if (btn.dataset.rsvp === 'going') {
-                                    showAlert('[data-events-alerts]', 'Great! This event has been added to your calendar.', 'success');
-                                }
-                            }
-                        } catch (e) {
-                            showAlert('[data-events-alerts]', 'Unable to save RSVP.', 'danger');
-                        } finally {
-                            btn.disabled = false; btn.textContent = prev;
-                        }
-                    });
-                });
             });
         } catch (error) {
             console.error(error);

@@ -519,6 +519,54 @@ a span:hover {
 	border-bottom: none;
 }
 
+/* Hint text styling */
+.card-header .details-hint {
+    color: rgba(255, 255, 255, 0.55) !important; /* lighter than default */
+}
+.card-header .details-hint:hover {
+    color: rgba(255, 255, 255, 0.85) !important; /* brighten slightly on hover */
+}
+.card-body .details-hint {
+    color: #6c757d; /* muted in light mode for readability */
+}
+body.dark-mode .card-body .details-hint {
+    color: rgba(255, 255, 255, 0.85) !important; /* off-white in dark mode */
+}
+/* Modal theming to match cards */
+.modal-content {
+	border: none;
+	border-radius: 0.75rem;
+}
+.modal-header {
+	background: linear-gradient(135deg, #30BCED 0%, #2AA5D4 100%);
+	color: #fff;
+	border-bottom: none;
+}
+.modal-title { color: #fff; }
+.modal-footer { border-top: 1px solid rgba(0,0,0,0.1); }
+
+/* Dark mode modal */
+body.dark-mode .modal-content {
+	background-color: #1a1a1a;
+	color: #e0e0e0;
+	border: 1px solid #3a3a3a;
+}
+body.dark-mode .modal-header {
+	background: linear-gradient(135deg, #0d7a99 0%, #0a5f7a 100%);
+	color: #fff;
+	border-bottom: none;
+}
+body.dark-mode .modal-footer {
+	background-color: #1a1a1a;
+	color: #e0e0e0;
+	border-top: 1px solid #3a3a3a;
+}
+body.dark-mode .modal-header .close {
+	color: #fff;
+	opacity: 0.85;
+}
+body.dark-mode .modal-header .close:hover { opacity: 1; }
+
 /* Navigation pills styling */
 .nav-pills .nav-link {
 	border-radius: 0.5rem;
