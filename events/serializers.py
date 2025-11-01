@@ -140,7 +140,7 @@ class EventSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         if not getattr(user.profile, "is_organizer", False):
             raise serializers.ValidationError("Only organizers can create events.")
-        validated_data["created_by"] = user
+        # created_by is set in perform_create in the viewset
         return super().create(validated_data)
 
     def update(self, instance, validated_data):

@@ -76,7 +76,7 @@
                 } catch (error) {
                     console.error("Logout failed", error);
                 } finally {
-                    const redirect = button.dataset.logoutRedirect || "/events/login/";
+                    const redirect = button.dataset.logoutRedirect || "/login/";
                     window.location.href = redirect;
                 }
             });
@@ -120,7 +120,7 @@
         bindLogoutButtons();
 
         if (!state.authenticated && document.body.dataset.requireAuth === "true") {
-            const loginUrl = document.body.dataset.loginUrl || "/events/login/";
+            const loginUrl = document.body.dataset.loginUrl || "/login/";
             const nextValue = encodeURIComponent(window.location.pathname + window.location.search);
             window.location.replace(`${loginUrl}?next=${nextValue}`);
             return state;
@@ -470,7 +470,7 @@
                 showAlert(alerts, "Logged in successfully. Redirecting…", "success");
                 await initAuthUI();
                 const nextParam = getNextParam();
-                const redirectTarget = nextParam || form.dataset.redirectSuccess || "/events/";
+                const redirectTarget = nextParam || form.dataset.redirectSuccess || "/";
                 setTimeout(() => {
                     window.location.href = redirectTarget;
                 }, 400);
@@ -520,7 +520,7 @@
 
                 showAlert(alerts, "Account created! You can now log in.", "success");
                 setTimeout(() => {
-                    const redirectTarget = form.dataset.redirectSuccess || "/events/login/";
+                    const redirectTarget = form.dataset.redirectSuccess || "/login/";
                     window.location.href = redirectTarget;
                 }, 600);
             } catch (error) {
@@ -850,6 +850,60 @@
         await loadConversations();
     }
 
+    function bindEventCreateForm() {
+        const form = document.querySelector("[data-event-create-form]");
+        if (!form) {
+            return;
+        }
+        const alerts = document.querySelector("[data-event-alerts]");
+        
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            clearAlerts(alerts);
+            
+            const submitButton = form.querySelector("button[type='submit']");
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            
+            // Gather form data
+            const payload = {
+                title: form.querySelector("[name='title']").value,
+                description: form.querySelector("[name='description']").value || "",
+                perks: form.querySelector("[name='perks']").value || "",
+                location_name: form.querySelector("[name='location_name']").value || "",
+                address: form.querySelector("[name='address']").value || "",
+                start_time: form.querySelector("[name='start_time']").value,
+                end_time: form.querySelector("[name='end_time']").value || null,
+            };
+            
+            try {
+                const response = await apiFetch(EVENTS_ENDPOINT, {
+                    method: "POST",
+                    body: payload,
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    showAlert(alerts, flattenErrors(data), "danger");
+                    return;
+                }
+                
+                showAlert(alerts, "Event created successfully! Redirecting...", "success");
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 800);
+            } catch (error) {
+                console.error("Event creation failed", error);
+                showAlert(alerts, "Unable to create event. Please try again.", "danger");
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
+            }
+        });
+    }
+
     function initSettingsFormWarning() {
         const settingsForm = document.querySelector('main form:not([data-logout-button])');
         if (!settingsForm) {
@@ -931,7 +985,7 @@
             document.body.dataset.redirectIfAuthenticated === "true" &&
             authState.authenticated
         ) {
-            const redirectTarget = document.body.dataset.redirectAuthTarget || "/events/";
+            const redirectTarget = document.body.dataset.redirectAuthTarget || "/";
             window.location.replace(redirectTarget);
             return;
         }
@@ -943,6 +997,7 @@
         populateProfile(authState);
         bindLoginForm();
         bindRegisterForm();
+        bindEventCreateForm();
         initSettingsFormWarning();
         initThemeToggle();
     });

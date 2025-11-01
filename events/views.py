@@ -120,9 +120,11 @@ def haversine_km(lat1, lon1, lat2, lon2):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [
-        IsServerOwnerOrReadOnly & IsOrganizerOrReadOnly & IsOwnerOrganizerOrReadOnly
-    ]
+    permission_classes = [IsAuthenticated, IsOrganizerOrReadOnly]
+
+    def perform_create(self, serializer):
+        """Set the created_by field to the current user when creating an event."""
+        serializer.save(created_by=self.request.user)
 
     def get_queryset(self):
         qs = Event.objects.all()
