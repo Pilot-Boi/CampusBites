@@ -688,3 +688,69 @@ a span:hover {
 	transform: translateY(-2px);
 	color: #fff;
 }
+/* RSVP button spacing and styling */
+.btn-group-sm.mt-2 {
+	gap: 0.5rem;
+}
+
+/* RSVP Maybe button - darker yellow in dark mode */
+body.dark-mode .btn-warning,
+body.dark-mode .btn-outline-warning {
+	background-color: #d4a017;
+	border-color: #d4a017;
+	color: #000;
+}
+
+body.dark-mode .btn-warning:hover,
+body.dark-mode .btn-outline-warning:hover {
+	background-color: #b8900f;
+	border-color: #b8900f;
+	color: #000;
+}
+
+body.dark-mode .btn-outline-warning {
+	background-color: transparent;
+	color: #d4a017;
+}
+
+body.dark-mode .btn-outline-warning:hover {
+	background-color: #d4a017;
+	color: #000;
+}
+
+/* RSVP Not Going button - coral accent color */
+.btn-group [data-rsvp="not_going"] {
+	background-color: transparent;
+	border-color: #FC5130;
+	color: #FC5130;
+}
+
+.btn-group [data-rsvp="not_going"]:hover {
+	background-color: #FC5130;
+	border-color: #FC5130;
+	color: #fff;
+}
+
+.btn-group [data-rsvp="not_going"].btn-secondary {
+	background-color: #FC5130;
+	border-color: #FC5130;
+	color: #fff;
+}
+
+body.dark-mode .btn-group [data-rsvp="not_going"] {
+	background-color: transparent;
+	border-color: #FC5130;
+	color: #FC5130;
+}
+
+body.dark-mode .btn-group [data-rsvp="not_going"]:hover {
+	background-color: #FC5130;
+	border-color: #FC5130;
+	color: #fff;
+}
+
+body.dark-mode .btn-group [data-rsvp="not_going"].btn-secondary {
+	background-color: #FC5130;
+	border-color: #FC5130;
+	color: #fff;
+}

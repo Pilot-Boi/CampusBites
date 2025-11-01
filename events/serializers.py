@@ -111,6 +111,7 @@ class EventSerializer(serializers.ModelSerializer):
     going_count = serializers.IntegerField(read_only=True)
     maybe_count = serializers.IntegerField(read_only=True)
     not_going_count = serializers.IntegerField(read_only=True)
+    my_rsvp = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -131,6 +132,7 @@ class EventSerializer(serializers.ModelSerializer):
             "going_count",
             "maybe_count",
             "not_going_count",
+            "my_rsvp",
         ]
     read_only_fields = [
             "latitude",
@@ -141,7 +143,17 @@ class EventSerializer(serializers.ModelSerializer):
             "going_count",
             "maybe_count",
             "not_going_count",
+            "my_rsvp",
         ]
+
+    def get_my_rsvp(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and getattr(user, "is_authenticated", False):
+            r = RSVP.objects.filter(user=user, event=obj).only("status").first()
+            return r.status if r else None
+        return None
+
     def create(self, validated_data):
         user = self.context["request"].user
         if not getattr(user.profile, "is_organizer", False):
@@ -166,8 +178,14 @@ class RSVPSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
     def create(self, validated_data):
-        validated_data["user"] = self.context["request"].user
-        return super().create(validated_data)
+        user = self.context["request"].user
+        event = validated_data.get("event")
+        status = validated_data.get("status")
+        # Upsert: if an RSVP exists for this user+event, update it; otherwise create
+        obj, _created = RSVP.objects.update_or_create(
+            user=user, event=event, defaults={"status": status}
+        )
+        return obj
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):

@@ -163,6 +163,11 @@ class EventViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
 
+        # filter by current user's RSVP status (e.g., rsvp=going|maybe|not_going)
+        rsvp_status = self.request.query_params.get("rsvp")
+        if rsvp_status in {RSVP.GOING, RSVP.MAYBE, RSVP.NOT_GOING} and user and getattr(user, "is_authenticated", False):
+            qs = qs.filter(rsvps__user=user, rsvps__status=rsvp_status)
+
         # annotate RSVP counts
         qs = qs.annotate(
             going_count=Count("rsvps", filter=Q(rsvps__status=RSVP.GOING)),

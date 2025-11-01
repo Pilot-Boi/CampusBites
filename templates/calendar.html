@@ -139,7 +139,19 @@
                                         center: 'title',
                                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
                                 },
-                                events: '/api/events/', // Fetch events from the API endpoint
+                                events: '/api/events/?rsvp=going', // Only events I'm going to
+                                eventDataTransform: function (data) {
+                                        // Map API fields to FullCalendar expectations
+                                        return {
+                                                id: data.id,
+                                                title: data.title,
+                                                start: data.start_time,
+                                                end: data.end_time,
+                                                extendedProps: {
+                                                        description: data.description || ''
+                                                }
+                                        };
+                                },
                                 eventClick: function (info) {
                                         // Display event details in an alert or modal
                                         alert('Event: ' + info.event.title + '\n' +

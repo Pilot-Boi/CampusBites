@@ -40,6 +40,9 @@ def prof_messages_page(request):
 def my_events_page(request):
     return render(request, "profile_my_events.html")
 
+def manage_event_page(request, event_id):
+    return render(request, "manage_event.html", {"event_id": event_id})
+
 def contact_page(request):
     return render(request, "contact.html")
 

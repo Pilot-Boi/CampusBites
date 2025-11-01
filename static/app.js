@@ -11,6 +11,7 @@
     const CONVERSATIONS_ENDPOINT = `${API_ROOT}/conversations/`;
     const MESSAGES_ENDPOINT = `${API_ROOT}/messages/`;
     const SIGNUP_ENDPOINT = `${API_ROOT}/signup/`;
+    const ANNOUNCEMENTS_ENDPOINT = `${API_ROOT}/announcements/`;
 
     function apiFetch(url, options = {}) {
         const opts = Object.assign({ method: "GET" }, options);
@@ -204,13 +205,118 @@
                 const notGoing = event.not_going_count ?? 0;
                 stats.textContent = `RSVPs — Going: ${going}, Maybe: ${maybe}, Not Going: ${notGoing}`;
 
+                // RSVP buttons
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group btn-group-sm mt-2';
+                btnGroup.setAttribute('role', 'group');
+
+                const current = event.my_rsvp; // 'going' | 'maybe' | 'not_going' | null
+                const btnGoing = document.createElement('button');
+                btnGoing.className = `btn ${current === 'going' ? 'btn-success' : 'btn-outline-success'}`;
+                btnGoing.textContent = 'Going';
+                btnGoing.dataset.rsvp = 'going';
+                btnGoing.dataset.eventId = event.id;
+
+                const btnMaybe = document.createElement('button');
+                btnMaybe.className = `btn ${current === 'maybe' ? 'btn-warning' : 'btn-outline-warning'}`;
+                btnMaybe.textContent = 'Maybe';
+                btnMaybe.dataset.rsvp = 'maybe';
+                btnMaybe.dataset.eventId = event.id;
+
+                const btnNot = document.createElement('button');
+                btnNot.className = `btn ${current === 'not_going' ? 'btn-secondary' : 'btn-outline-secondary'}`;
+                btnNot.textContent = 'Not Going';
+                btnNot.dataset.rsvp = 'not_going';
+                btnNot.dataset.eventId = event.id;
+
+                btnGroup.appendChild(btnGoing);
+                btnGroup.appendChild(btnMaybe);
+                btnGroup.appendChild(btnNot);
+
+                // Clear RSVP button (only shown if user has an RSVP)
+                const rsvpContainer = document.createElement('div');
+                rsvpContainer.className = 'd-flex align-items-center mt-2';
+                rsvpContainer.appendChild(btnGroup);
+
+                if (current) {
+                    const btnClear = document.createElement('button');
+                    btnClear.className = 'btn btn-sm btn-outline-danger ml-2';
+                    btnClear.textContent = 'Remove RSVP';
+                    btnClear.dataset.eventId = event.id;
+                    rsvpContainer.appendChild(btnClear);
+
+                    btnClear.addEventListener('click', async () => {
+                        const prev = btnClear.textContent;
+                        btnClear.disabled = true; btnClear.textContent = 'Removing…';
+                        try {
+                            // Find and delete the RSVP
+                            const rsvpResp = await apiFetch(`${API_ROOT}/rsvps/?event=${event.id}`);
+                            if (rsvpResp.ok) {
+                                const rsvps = await rsvpResp.json();
+                                const myRsvp = (Array.isArray(rsvps) ? rsvps : (rsvps.results || [])).find(r => r.event === event.id);
+                                if (myRsvp && myRsvp.id) {
+                                    const delResp = await apiFetch(`${API_ROOT}/rsvps/${myRsvp.id}/`, { method: 'DELETE' });
+                                    if (delResp.status === 204 || delResp.ok) {
+                                        await loadEventsList();
+                                    } else {
+                                        showAlert('[data-events-alerts]', 'Unable to clear RSVP.', 'danger');
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            showAlert('[data-events-alerts]', 'Unable to remove RSVP.', 'danger');
+                        } finally {
+                            btnClear.disabled = false; btnClear.textContent = prev;
+                        }
+                    });
+                }
+
+                // "View on Calendar" link (only shown if user is going)
+                if (current === 'going') {
+                    const calendarLink = document.createElement('a');
+                    calendarLink.href = '/calendar/';
+                    calendarLink.className = 'btn btn-sm btn-link ml-2';
+                    calendarLink.textContent = '📅 View on Calendar';
+                    rsvpContainer.appendChild(calendarLink);
+                }
+
                 cardBody.appendChild(title);
                 cardBody.appendChild(timing);
                 cardBody.appendChild(description);
                 cardBody.appendChild(location);
                 cardBody.appendChild(stats);
+                cardBody.appendChild(rsvpContainer);
                 card.appendChild(cardBody);
                 listContainer.appendChild(card);
+
+                // Bind RSVP clicks
+                [btnGoing, btnMaybe, btnNot].forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const prev = btn.textContent;
+                        btn.disabled = true; btn.textContent = 'Saving…';
+                        try {
+                            const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
+                                method: 'POST',
+                                body: { event: event.id, status: btn.dataset.rsvp }
+                            });
+                            if (!resp.ok) {
+                                const data = await resp.json().catch(() => ({}));
+                                showAlert('[data-events-alerts]', flattenErrors(data) || 'Unable to save RSVP.', 'danger');
+                            } else {
+                                // Refresh the list so counts and selection update
+                                await loadEventsList();
+                                // Show success message for "Going" status
+                                if (btn.dataset.rsvp === 'going') {
+                                    showAlert('[data-events-alerts]', 'Great! This event has been added to your calendar.', 'success');
+                                }
+                            }
+                        } catch (e) {
+                            showAlert('[data-events-alerts]', 'Unable to save RSVP.', 'danger');
+                        } finally {
+                            btn.disabled = false; btn.textContent = prev;
+                        }
+                    });
+                });
             });
         } catch (error) {
             console.error(error);
@@ -247,7 +353,7 @@
                                 <small class="text-muted">${formatDateTime(ev.start_time)}${ev.end_time ? ' – ' + formatDateTime(ev.end_time) : ''}</small>
                             </div>
                             <div class="btn-group btn-group-sm">
-                                <a href="/create/" class="btn btn-outline-secondary btn-edit" disabled>Edit</a>
+                                <a href="/manage/${ev.id}/" class="btn btn-outline-primary">Manage</a>
                                 <button class="btn btn-outline-danger" data-delete-event data-id="${ev.id}">Delete</button>
                             </div>
                         </div>`;
@@ -1118,6 +1224,147 @@
         });
     }
 
+    // ---- Event Management (manage_event.html) ----
+    async function loadEventManagement() {
+        const editForm = document.querySelector('[data-event-edit-form]');
+        const announcementForm = document.querySelector('[data-announcement-form]');
+        if (!editForm || !announcementForm) return; // not on manage page
+
+        const alerts = document.querySelector('[data-manage-alerts]');
+        const pathParts = window.location.pathname.split('/');
+        const eventId = pathParts[pathParts.indexOf('manage') + 1];
+
+        if (!eventId) {
+            showAlert(alerts, 'Invalid event ID.', 'danger');
+            return;
+        }
+
+        // Load event details
+        try {
+            const resp = await apiFetch(`${EVENTS_ENDPOINT}${eventId}/`);
+            if (!resp.ok) {
+                if (resp.status === 404) {
+                    showAlert(alerts, 'Event not found.', 'danger');
+                } else if (resp.status === 403) {
+                    showAlert(alerts, 'You do not have permission to manage this event.', 'danger');
+                } else {
+                    showAlert(alerts, 'Unable to load event details.', 'danger');
+                }
+                return;
+            }
+
+            const event = await resp.json();
+
+            // Populate form fields
+            editForm.querySelector('[name="title"]').value = event.title || '';
+            editForm.querySelector('[name="description"]').value = event.description || '';
+            editForm.querySelector('[name="perks"]').value = event.perks || '';
+            editForm.querySelector('[name="location_name"]').value = event.location_name || '';
+            editForm.querySelector('[name="address"]').value = event.address || '';
+
+            // Convert ISO datetime to datetime-local format (remove Z and milliseconds)
+            if (event.start_time) {
+                const startLocal = new Date(event.start_time);
+                editForm.querySelector('[name="start_time"]').value = 
+                    new Date(startLocal.getTime() - startLocal.getTimezoneOffset() * 60000)
+                        .toISOString().slice(0, 16);
+            }
+            if (event.end_time) {
+                const endLocal = new Date(event.end_time);
+                editForm.querySelector('[name="end_time"]').value = 
+                    new Date(endLocal.getTime() - endLocal.getTimezoneOffset() * 60000)
+                        .toISOString().slice(0, 16);
+            }
+
+            // Populate RSVP counts
+            document.querySelector('[data-rsvp-going]').textContent = event.going_count || 0;
+            document.querySelector('[data-rsvp-maybe]').textContent = event.maybe_count || 0;
+            document.querySelector('[data-rsvp-not-going]').textContent = event.not_going_count || 0;
+
+        } catch (e) {
+            console.error(e);
+            showAlert(alerts, 'Unable to load event details.', 'danger');
+            return;
+        }
+
+        // Handle edit form submission
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlerts(alerts);
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const prevText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const payload = {
+                title: editForm.querySelector('[name="title"]').value,
+                description: editForm.querySelector('[name="description"]').value || '',
+                perks: editForm.querySelector('[name="perks"]').value || '',
+                location_name: editForm.querySelector('[name="location_name"]').value || '',
+                address: editForm.querySelector('[name="address"]').value || '',
+                start_time: editForm.querySelector('[name="start_time"]').value,
+                end_time: editForm.querySelector('[name="end_time"]').value || null,
+            };
+
+            try {
+                const resp = await apiFetch(`${EVENTS_ENDPOINT}${eventId}/`, {
+                    method: 'PATCH',
+                    body: payload
+                });
+
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({}));
+                    showAlert(alerts, flattenErrors(data) || 'Unable to update event.', 'danger');
+                } else {
+                    showAlert(alerts, 'Event updated successfully!', 'success');
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert(alerts, 'Unable to update event.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = prevText;
+            }
+        });
+
+        // Handle announcement form submission
+        announcementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlerts(alerts);
+            const submitBtn = announcementForm.querySelector('button[type="submit"]');
+            const prevText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            const payload = {
+                event: parseInt(eventId),
+                title: announcementForm.querySelector('[name="title"]').value,
+                body: announcementForm.querySelector('[name="body"]').value
+            };
+
+            try {
+                const resp = await apiFetch(ANNOUNCEMENTS_ENDPOINT, {
+                    method: 'POST',
+                    body: payload
+                });
+
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({}));
+                    showAlert(alerts, flattenErrors(data) || 'Unable to send announcement.', 'danger');
+                } else {
+                    showAlert(alerts, 'Announcement sent successfully! Attendees will be notified.', 'success');
+                    announcementForm.reset();
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert(alerts, 'Unable to send announcement.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = prevText;
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
         // Apply theme immediately on page load for all pages
         applyTheme();
@@ -1144,5 +1391,6 @@
         bindEventCreateForm();
         initSettingsFormWarning();
         initThemeToggle();
+        loadEventManagement();
     });
 })();

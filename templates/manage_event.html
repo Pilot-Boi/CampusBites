@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!-- 
+	Software Engineering Project
+	Basma Chandour, Jason Diab, Emily Dugan, Michael Yin
+	
+	CampusBites manage event page
+-->
+{% load static %}
+<html lang="en">
+
+<head>
+	<title>Manage Event - CampusBites</title>
+	<meta charset="utf-8" />
+	<script>
+		// Apply theme immediately to prevent flash
+		(function() {
+			const theme = localStorage.getItem('theme') || 'light';
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark-mode');
+			}
+		})();
+	</script>
+	<style>
+		html.dark-mode {
+			background-color: #1a1a1a !important;
+		}
+		html.dark-mode body {
+			background-color: #1a1a1a !important;
+			color: #e0e0e0 !important;
+			min-height: 100vh !important;
+		}
+		html.dark-mode .bg-light {
+			background-color: #2a2a2a !important;
+			color: #e0e0e0 !important;
+		}
+		html.dark-mode .page-hero {
+			background-color: #2a2a2a !important;
+			color: #e0e0e0 !important;
+		}
+		html.dark-mode .page-hero h2,
+		html.dark-mode .page-hero h3 {
+			color: #e0e0e0 !important;
+		}
+		html.dark-mode .card,
+		html.dark-mode body .card {
+			background-color: #1a1a1a !important;
+			color: #e0e0e0 !important;
+			border: 1px solid #3a3a3a !important;
+		}
+		html.dark-mode .form-control,
+		html.dark-mode body .form-control {
+			background-color: #333 !important;
+			color: #e0e0e0 !important;
+			border-color: #3a3a3a !important;
+		}
+		html.dark-mode .list-group-item {
+			background-color: #1a1a1a !important;
+			color: #e0e0e0 !important;
+			border-color: #3a3a3a !important;
+		}
+		html.dark-mode .card-footer {
+			background-color: #1a1a1a !important;
+			color: #e0e0e0 !important;
+			border-top: 1px solid #3a3a3a !important;
+		}
+	</style>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		crossorigin="anonymous" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body data-require-auth="true" data-login-url="{% url 'web-login' %}">
+	<header>
+		<div class="container-fluid px-5">
+			<div class="row align-items-center">
+				<div class="col-sm-6">
+					<h1>CampusBites</h1>
+				</div>
+				<div class="col-sm-6">
+					<!-- NAVIGATION BAR -->
+					<nav class="text-right">
+						<div data-nav-guest>
+							<a class="nav-link d-inline" href="{% url 'web-login' %}">Login</a>
+							<a class="nav-link d-inline" href="{% url 'web-register' %}">Register</a>
+							<a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+						</div>
+						<div class="d-none" data-nav-auth>
+							<a class="nav-link d-inline" href="{% url 'web-calendar' %}">Calendar</a>
+							<a class="nav-link d-inline" href="{% url 'web-events' %}">Events</a>
+							<a class="nav-link d-inline" href="{% url 'web-about' %}">About</a>
+							<a class="nav-link d-inline p-0" href="{% url 'web-profile' %}"
+								style="vertical-align: middle;">
+								<img src="{% static 'images/default-avatar.png' %}" alt="Profile"
+									class="rounded-circle"
+									style="width: 32px; height: 32px; object-fit: cover;"
+									data-profile-picture>
+								<span class="nav-link d-inline font-weight-bold"
+									data-nav-username></span>
+							</a>
+							<button type="button"
+								class="btn btn-link nav-link d-inline text-danger p-0 align-baseline"
+								data-logout-button
+								data-logout-redirect="{% url 'web-login' %}">Logout</button>
+						</div>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<section class="bg-light py-4">
+		<div class="container-fluid px-5">
+			<div class="row">
+				<!-- Sidebar -->
+				<nav class="col-md-3 col-lg-2 d-md-block sidebar-panel sidebar shadow-sm rounded p-3">
+                    <h4 class="mb-4">Welcome, <span data-profile-username>Guest</span>!</h4>
+                    <ul class="nav flex-column nav-pills">
+                        <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile' %}">Overview</a></li>
+                        <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-settings' %}">Settings</a></li>
+                        <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-friends' %}">Friends</a></li>
+                        <li class="nav-item"><a class="nav-link disactive" href="{% url 'web-profile-messages' %}">Messages</a></li>
+                        <li class="nav-item"><span class="nav-link active">My Events</span></li>
+                    </ul>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-outline-danger btn-block w-100" data-logout-button data-logout-redirect="{% url 'web-login' %}">Log out</button>
+                    </div>
+                </nav>
+
+				<!-- Main Content -->
+				<main class="col-md-9 profile-main">
+					<div data-manage-alerts></div>
+
+					<!-- Event Details Card -->
+					<div class="card mb-4">
+						<div class="card-header">
+							<h5 class="mb-0">Event Details</h5>
+						</div>
+						<div class="card-body">
+							<form data-event-edit-form>
+								<div class="form-group">
+									<label for="eventTitle">Title *</label>
+									<input type="text" class="form-control" id="eventTitle" name="title" required>
+								</div>
+
+								<div class="form-group">
+									<label for="eventDescription">Description</label>
+									<textarea class="form-control" id="eventDescription" name="description" rows="4"></textarea>
+								</div>
+
+								<div class="form-group">
+									<label for="eventPerks">Perks (e.g., free pizza, swag)</label>
+									<input type="text" class="form-control" id="eventPerks" name="perks">
+								</div>
+
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="eventStartTime">Start Time *</label>
+										<input type="datetime-local" class="form-control" id="eventStartTime" name="start_time" required>
+									</div>
+									<div class="form-group col-md-6">
+										<label for="eventEndTime">End Time</label>
+										<input type="datetime-local" class="form-control" id="eventEndTime" name="end_time">
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="eventLocationName">Location Name</label>
+									<input type="text" class="form-control" id="eventLocationName" name="location_name" placeholder="e.g., Student Center">
+								</div>
+
+								<div class="form-group">
+									<label for="eventAddress">Address</label>
+									<input type="text" class="form-control" id="eventAddress" name="address" placeholder="e.g., 123 Campus Drive">
+								</div>
+
+								<div class="d-flex justify-content-between">
+									<button type="submit" class="btn btn-primary">Save Changes</button>
+									<a href="{% url 'web-my-events' %}" class="btn btn-secondary">Back to My Events</a>
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<!-- Send Announcement Card -->
+					<div class="card mb-4">
+						<div class="card-header">
+							<h5 class="mb-0">Send Announcement</h5>
+						</div>
+						<div class="card-body">
+							<p class="text-muted">Send an update or alert message to attendees who marked "Going" or "Maybe" for this event.</p>
+							<form data-announcement-form>
+								<div class="form-group">
+									<label for="announcementTitle">Subject *</label>
+									<input type="text" class="form-control" id="announcementTitle" name="title" required>
+								</div>
+
+								<div class="form-group">
+									<label for="announcementBody">Message *</label>
+									<textarea class="form-control" id="announcementBody" name="body" rows="5" required></textarea>
+								</div>
+
+								<button type="submit" class="btn btn-primary">Send Announcement</button>
+							</form>
+						</div>
+					</div>
+
+					<!-- RSVP Summary Card -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="mb-0">RSVP Summary</h5>
+						</div>
+						<div class="card-body">
+							<div class="row text-center">
+								<div class="col-md-4">
+									<h3 class="text-success mb-0" data-rsvp-going>0</h3>
+									<p class="text-muted mb-0">Going</p>
+								</div>
+								<div class="col-md-4">
+									<h3 class="text-warning mb-0" data-rsvp-maybe>0</h3>
+									<p class="text-muted mb-0">Maybe</p>
+								</div>
+								<div class="col-md-4">
+									<h3 class="mb-0" style="color: #FC5130;" data-rsvp-not-going>0</h3>
+									<p class="text-muted mb-0">Not Going</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+			</div>
+		</div>
+	</section>
+
+	<footer>
+		<div class="container-fluid px-5">
+			<div class="row">
+				<p class="col-sm-4">&copy; 2025 CampusBites</p>
+			</div>
+		</div>
+	</footer>
+
+	<script src="{% static 'app.js' %}"></script>
+</body>
+
+</html>
