@@ -156,7 +156,9 @@
         return date.toLocaleDateString(undefined, { dateStyle: 'medium' });
     }
 
-       function showEventDetailsModal(event) {
+    // Make showEventDetailsModal globally accessible for calendar.html
+    window.showEventDetailsModal = function(event, options = {}) {
+           const isCalendarView = options.isCalendarView || false;
            const modalBody = document.getElementById('eventDetailsBody');
            const modalTitle = document.getElementById('eventDetailsModalLabel');
            const modalFooter = document.getElementById('eventDetailsFooter');
@@ -166,8 +168,15 @@
            // Set modal title
            modalTitle.textContent = event.title;
        
-           // Build modal content
+           // Build modal content with two-column layout if map available
+           const hasMap = (event.latitude && event.longitude) || event.address;
+           
            const content = document.createElement('div');
+           content.className = hasMap ? 'row' : '';
+           
+           // Left column for text content
+           const textCol = document.createElement('div');
+           textCol.className = hasMap ? 'col-md-7' : '';
        
            // Timing
            const timing = document.createElement('p');
@@ -175,7 +184,7 @@
            const start = formatDateTime(event.start_time);
            const end = formatDateTime(event.end_time);
            timing.innerHTML = `<strong>When:</strong> ${end ? `${start} – ${end}` : start}`;
-           content.appendChild(timing);
+           textCol.appendChild(timing);
            
            // Organizer
            if (event.created_by && event.created_by.username) {
@@ -187,7 +196,7 @@
                a.textContent = event.created_by.username;
                a.className = 'organizer-link';
                org.appendChild(a);
-               content.appendChild(org);
+               textCol.appendChild(org);
            }
        
            // Location
@@ -197,48 +206,54 @@
            if (event.address && event.address !== event.location_name) {
                location.innerHTML += `<br><small class="text-muted">${event.address}</small>`;
            }
-           content.appendChild(location);
+           textCol.appendChild(location);
        
            // Description
            const description = document.createElement('p');
            description.className = 'mb-3';
            description.innerHTML = `<strong>Description:</strong><br>${event.description || 'No description available.'}`;
-           content.appendChild(description);
+           textCol.appendChild(description);
        
            // Perks
            if (event.perks) {
                const perks = document.createElement('p');
                perks.className = 'mb-3';
                perks.innerHTML = `<strong>Perks:</strong><br>${event.perks}`;
-               content.appendChild(perks);
+               textCol.appendChild(perks);
            }
        
-           // RSVP Stats
-           const stats = document.createElement('p');
-           stats.className = 'mb-3';
-           const going = event.going_count ?? 0;
-           const maybe = event.maybe_count ?? 0;
-           const notGoing = event.not_going_count ?? 0;
-           stats.innerHTML = `<strong>RSVPs:</strong> Going: <span class="text-success">${going}</span>, Maybe: <span class="text-warning">${maybe}</span>, Not Going: <span style="color:#FC5130;">${notGoing}</span>`;
-           content.appendChild(stats);
+           // RSVP Stats removed per request (no counts on modal)
+           
+           content.appendChild(textCol);
        
-           // Map (if available)
-           if (event.latitude && event.longitude) {
+           // Right column for map (if available)
+           if (hasMap) {
+               const mapCol = document.createElement('div');
+               mapCol.className = 'col-md-5';
+               
                const mapContainer = document.createElement('div');
-               mapContainer.className = 'embed-responsive embed-responsive-16by9 mb-3';
+               mapContainer.className = 'embed-responsive embed-responsive-1by1 mb-3';
                mapContainer.style.borderRadius = '8px';
                mapContainer.style.overflow = 'hidden';
            
                const mapIframe = document.createElement('iframe');
                mapIframe.className = 'embed-responsive-item';
-               mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${event.latitude},${event.longitude}&zoom=15`;
+               
+               if (event.latitude && event.longitude) {
+                   mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${event.latitude},${event.longitude}&zoom=15`;
+               } else {
+                   const encodedAddress = encodeURIComponent(event.address);
+                   mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
+               }
+               
                mapIframe.setAttribute('frameborder', '0');
                mapIframe.setAttribute('style', 'border:0');
                mapIframe.setAttribute('allowfullscreen', '');
                mapIframe.setAttribute('loading', 'lazy');
            
                mapContainer.appendChild(mapIframe);
-               content.appendChild(mapContainer);
+               mapCol.appendChild(mapContainer);
+               content.appendChild(mapCol);
            }
        
            // Clear and set modal body content
@@ -249,81 +264,157 @@
            const current = event.my_rsvp;
            modalFooter.innerHTML = '';
        
-           const btnGroup = document.createElement('div');
-           btnGroup.className = 'btn-group btn-group-sm mr-auto';
-           btnGroup.setAttribute('role', 'group');
-       
-           const btnGoing = document.createElement('button');
-           btnGoing.className = `btn ${current === 'going' ? 'btn-success' : 'btn-outline-success'}`;
-           btnGoing.textContent = 'Going';
-           btnGoing.dataset.rsvp = 'going';
-       
-           const btnMaybe = document.createElement('button');
-           btnMaybe.className = `btn ${current === 'maybe' ? 'btn-warning' : 'btn-outline-warning'}`;
-           btnMaybe.textContent = 'Maybe';
-           btnMaybe.dataset.rsvp = 'maybe';
-       
-           const btnNot = document.createElement('button');
-           btnNot.className = `btn ${current === 'not_going' ? 'btn-secondary' : 'btn-outline-secondary'}`;
-           btnNot.textContent = 'Not Going';
-           btnNot.dataset.rsvp = 'not_going';
-       
-           btnGroup.appendChild(btnGoing);
-           btnGroup.appendChild(btnMaybe);
-           btnGroup.appendChild(btnNot);
-           modalFooter.appendChild(btnGroup);
-       
+           if (isCalendarView) {
+               // Calendar view: always show three state buttons with active/inactive styling
+               const btnContainer = document.createElement('div');
+               btnContainer.className = 'd-flex align-items-center mr-auto';
+
+               function buildBtn(label, value) {
+                   const btn = document.createElement('button');
+                   btn.type = 'button';
+                   btn.dataset.rsvp = value;
+                   btn.textContent = label;
+                   btn.className = 'btn btn-sm';
+                   // Active (current) = blue with white text; Inactive = gray outline + gray text
+                   if (current === value) {
+                       btn.classList.add('btn-primary', 'text-white');
+                   } else {
+                       btn.classList.add('btn-outline-secondary', 'text-secondary');
+                   }
+                   btn.style.marginRight = '0.5rem';
+                   return btn;
+               }
+
+               const btnGoing = buildBtn('Going', 'going');
+               const btnMaybe = buildBtn('Maybe', 'maybe');
+               const btnNot = buildBtn('Not Going', 'not_going');
+
+               btnContainer.appendChild(btnGoing);
+               btnContainer.appendChild(btnMaybe);
+               btnContainer.appendChild(btnNot);
+               modalFooter.appendChild(btnContainer);
+
+               // RSVP click handlers for calendar view
+               [btnGoing, btnMaybe, btnNot].forEach(btn => {
+                   btn.addEventListener('click', async () => {
+                       const prev = btn.textContent;
+                       // Disable all three while saving to prevent double submits
+                       [btnGoing, btnMaybe, btnNot].forEach(b => { b.disabled = true; });
+                       btn.textContent = 'Saving…';
+                       try {
+                           const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
+                               method: 'POST',
+                               body: { event: event.id, status: btn.dataset.rsvp }
+                           });
+                           if (!resp.ok) {
+                               const data = await resp.json().catch(() => ({}));
+                               alert(flattenErrors(data) || 'Unable to save RSVP.');
+                           } else {
+                               // Close modal and update calendar
+                               $('#eventDetailsModal').modal('hide');
+                               if (btn.dataset.rsvp === 'not_going') {
+                                   // Remove from calendar (page reload is simplest and reliable)
+                                   window.location.reload();
+                               } else if (typeof calendar !== 'undefined' && calendar.refetchEvents) {
+                                   calendar.refetchEvents();
+                               }
+                           }
+                       } catch (e) {
+                           alert('Unable to save RSVP.');
+                       } finally {
+                           [btnGoing, btnMaybe, btnNot].forEach(b => { b.disabled = false; });
+                           btn.textContent = prev;
+                       }
+                   });
+               });
+           } else {
+               // Events page view: show all RSVP buttons as before
+               const btnContainer = document.createElement('div');
+               btnContainer.className = 'd-flex gap-2 mr-auto';
+               btnContainer.style.gap = '0.5rem';
+           
+               const btnGoing = document.createElement('button');
+               btnGoing.className = `btn btn-sm ${current === 'going' ? 'btn-success' : 'btn-outline-success'}`;
+               btnGoing.textContent = 'Going';
+               btnGoing.dataset.rsvp = 'going';
+           
+               const btnMaybe = document.createElement('button');
+               btnMaybe.className = `btn btn-sm ${current === 'maybe' ? 'btn-warning' : 'btn-outline-warning'}`;
+               btnMaybe.textContent = 'Maybe';
+               btnMaybe.dataset.rsvp = 'maybe';
+           
+               const btnNot = document.createElement('button');
+               btnNot.className = 'btn btn-sm';
+               btnNot.dataset.rsvp = 'not_going';
+               btnNot.textContent = 'Not Going';
+               // Apply coral color styling
+               if (current === 'not_going') {
+                   btnNot.style.backgroundColor = '#FC5130';
+                   btnNot.style.borderColor = '#FC5130';
+                   btnNot.style.color = '#fff';
+               } else {
+                   btnNot.style.backgroundColor = 'transparent';
+                   btnNot.style.borderColor = '#FC5130';
+                   btnNot.style.color = '#FC5130';
+               }
+           
+               btnContainer.appendChild(btnGoing);
+               btnContainer.appendChild(btnMaybe);
+               btnContainer.appendChild(btnNot);
+               modalFooter.appendChild(btnContainer);
+               
+               // RSVP click handlers for events page
+               [btnGoing, btnMaybe, btnNot].forEach(btn => {
+                   btn.addEventListener('click', async () => {
+                       const prev = btn.textContent;
+                       btn.disabled = true;
+                       btn.textContent = 'Saving…';
+                       try {
+                           const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
+                               method: 'POST',
+                               body: { event: event.id, status: btn.dataset.rsvp }
+                           });
+                           if (!resp.ok) {
+                               const data = await resp.json().catch(() => ({}));
+                               showAlert('[data-events-alerts]', flattenErrors(data) || 'Unable to save RSVP.', 'danger');
+                           } else {
+                               // Close modal and refresh list
+                               $('#eventDetailsModal').modal('hide');
+                               await loadEventsList();
+                               if (btn.dataset.rsvp === 'going') {
+                                   showAlert('[data-events-alerts]', 'Great! This event has been added to your calendar.', 'success');
+                               }
+                           }
+                       } catch (e) {
+                           showAlert('[data-events-alerts]', 'Unable to save RSVP.', 'danger');
+                       } finally {
+                           btn.disabled = false;
+                           btn.textContent = prev;
+                       }
+                   });
+               });
+               
+               // View on Calendar link (only for events page when going)
+               if (current === 'going') {
+                   const calendarBtn = document.createElement('a');
+                   calendarBtn.href = '/calendar/';
+                   calendarBtn.className = 'btn btn-link';
+                   calendarBtn.textContent = '📅 View on Calendar';
+                   modalFooter.appendChild(calendarBtn);
+               }
+           }
+           
            // Add close button
            const btnClose = document.createElement('button');
            btnClose.className = 'btn btn-secondary';
            btnClose.setAttribute('data-dismiss', 'modal');
            btnClose.textContent = 'Close';
            modalFooter.appendChild(btnClose);
-           
-           // View on Calendar (if already Going)
-           if (current === 'going') {
-               const calendarBtn = document.createElement('a');
-               calendarBtn.href = '/calendar/';
-               calendarBtn.className = 'btn btn-link';
-               calendarBtn.textContent = '📅 View on Calendar';
-               modalFooter.appendChild(calendarBtn);
-           }
-       
-           // Add RSVP click handlers
-           [btnGoing, btnMaybe, btnNot].forEach(btn => {
-               btn.addEventListener('click', async () => {
-                   const prev = btn.textContent;
-                   btn.disabled = true;
-                   btn.textContent = 'Saving…';
-                   try {
-                       const resp = await apiFetch(`${API_ROOT}/rsvps/`, {
-                           method: 'POST',
-                           body: { event: event.id, status: btn.dataset.rsvp }
-                       });
-                       if (!resp.ok) {
-                           const data = await resp.json().catch(() => ({}));
-                           showAlert('[data-events-alerts]', flattenErrors(data) || 'Unable to save RSVP.', 'danger');
-                       } else {
-                           // Close modal and refresh list
-                           $('#eventDetailsModal').modal('hide');
-                           await loadEventsList();
-                           if (btn.dataset.rsvp === 'going') {
-                               showAlert('[data-events-alerts]', 'Great! This event has been added to your calendar.', 'success');
-                           }
-                       }
-                   } catch (e) {
-                       showAlert('[data-events-alerts]', 'Unable to save RSVP.', 'danger');
-                   } finally {
-                       btn.disabled = false;
-                       btn.textContent = prev;
-                   }
-               });
-           });
        
            // Show the modal
            $('#eventDetailsModal').modal('show');
-       }
-
+       };
+    
     async function loadEventsList() {
         const listContainer = document.querySelector("[data-events-list]");
         if (!listContainer) {
