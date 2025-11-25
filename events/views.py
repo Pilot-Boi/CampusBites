@@ -22,6 +22,7 @@ from .serializers import (
     SignupSerializer,
     ProfileSerializer,
     ProfileUpdateSerializer,
+    OrganizerStatusSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
@@ -29,6 +30,7 @@ from .permissions import (
     IsOrganizerOrReadOnly,
     IsOwnerOrganizerOrReadOnly,
     IsServerOwnerOrReadOnly,
+    IsRSVPOwnerOrReadOnly,
 )
 
 
@@ -93,15 +95,27 @@ class ProfileViewSet(
     queryset = Profile.objects.select_related("user")
     permission_classes = [IsAuthenticated & IsServerOwnerOrReadOnly]
     serializer_class = ProfileSerializer
+    lookup_field = "user_id"
 
     def get_serializer_class(self):
         if self.action in ["update", "partial_update"]:
             return ProfileUpdateSerializer
+        if self.action == "organizer":
+            return OrganizerStatusSerializer
         return ProfileSerializer
 
     @action(detail=False, methods=["get"])
     def me(self, request):
         return Response(ProfileSerializer(request.user.profile).data)
+
+    @action(detail=True, methods=["post"], url_path="organizer")
+    def organizer(self, request, pk=None):
+        profile = self.get_object()
+        serializer = self.get_serializer(data=request.data or {"is_organizer": True})
+        serializer.is_valid(raise_exception=True)
+        profile.is_organizer = serializer.validated_data["is_organizer"]
+        profile.save(update_fields=["is_organizer"])
+        return Response(ProfileSerializer(profile).data)
 
 
 # ---------- Events ----------
@@ -204,7 +218,7 @@ class EventViewSet(viewsets.ModelViewSet):
 class RSVPViewSet(viewsets.ModelViewSet):
     queryset = RSVP.objects.select_related("event", "user")
     serializer_class = RSVPSerializer
-    permission_classes = [IsAuthenticated & IsServerOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated & IsRSVPOwnerOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

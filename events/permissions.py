@@ -42,3 +42,24 @@ class IsServerOwnerOrReadOnly(BasePermission):
             return True
         user = request.user
         return bool(user and user.is_authenticated and user.is_superuser)
+
+
+class IsRSVPOwnerOrReadOnly(BasePermission):
+    """Allow RSVP owners (or superusers) to modify RSVPs, read-only otherwise."""
+
+    def has_permission(self, request, view):
+        # Object-level checks handle write protection; allow view-level checks to pass
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        if user.is_superuser:
+            return True
+
+        return obj.user_id == user.id

@@ -922,13 +922,26 @@
 
     function populateProfile(authState) {
         const usernameDisplays = document.querySelectorAll("[data-profile-username]");
-        if (!usernameDisplays.length) {
+        const userIdDisplays = document.querySelectorAll("[data-user-id-display]");
+        const userIdContainers = document.querySelectorAll("[data-user-id-container]");
+        const hasTargets =
+            usernameDisplays.length ||
+            userIdDisplays.length ||
+            document.querySelector("[data-profile-email]") ||
+            document.querySelector("[data-profile-role]") ||
+            document.querySelector("[data-profile-about]") ||
+            document.querySelector("textarea[data-profile-about]") ||
+            document.querySelector("[data-profile-picture]") ||
+            document.querySelector("[data-become-organizer]") ||
+            document.querySelector("[data-resign-organizer]");
+        if (!hasTargets) {
             return;
         }
         const alerts = document.querySelector("[data-profile-alerts]");
 
         if (!authState.authenticated || !authState.profile) {
             showAlert(alerts, "Please log in to view your profile.", "warning");
+            userIdContainers.forEach((container) => container.classList.add("d-none"));
             return;
         }
 
@@ -951,6 +964,11 @@
         if (roleDisplay) {
             roleDisplay.textContent = profile.is_organizer ? "Organizer" : "Guest";
         }
+
+        userIdDisplays.forEach((el) => {
+            el.textContent = profile.user.id;
+        });
+        userIdContainers.forEach((container) => container.classList.remove("d-none"));
 
         // Organizer controls on settings page
         const becomeOrganizerBtn = document.querySelector("[data-become-organizer]");

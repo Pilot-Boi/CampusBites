@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source="user_id", read_only=True)
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -33,6 +34,10 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ["is_organizer", "notifications_opt_out", "about_me", "profile_picture"]
+
+
+class OrganizerStatusSerializer(serializers.Serializer):
+    is_organizer = serializers.BooleanField(default=True)
 
 
 class SignupSerializer(serializers.ModelSerializer):
