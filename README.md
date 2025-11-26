@@ -92,3 +92,6 @@ These routes update automatically to reflect your local code changes, making the
 
 In an actual deployment, we would not serve static files and templates from django, it is much better and more practical to serve them directly as static files
 through nginx and not from django
+
+# Accessible link
+https://asdghuaet.exodusbot.com/
