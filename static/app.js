@@ -156,6 +156,90 @@
         return date.toLocaleDateString(undefined, { dateStyle: 'medium' });
     }
 
+    const UPCOMING_DISMISS_KEY = "upcoming-event-banner";
+    const UPCOMING_WINDOW_HOURS = 24;
+
+    function buildUpcomingEventBanner(event) {
+        const existing = document.querySelector('[data-upcoming-alert]');
+        if (existing) {
+            existing.remove();
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'alert alert-info shadow upcoming-alert';
+        wrapper.setAttribute('role', 'alert');
+        wrapper.dataset.upcomingAlert = 'true';
+
+        const headline = document.createElement('div');
+        headline.className = 'font-weight-bold mb-1';
+        headline.textContent = 'Upcoming event reminder';
+        wrapper.appendChild(headline);
+
+        const details = document.createElement('div');
+        details.className = 'small';
+        const when = formatDateTime(event.start_time);
+        details.textContent = `${event.title} starts on ${when}.`;
+        wrapper.appendChild(details);
+
+        const actions = document.createElement('div');
+        actions.className = 'mt-2 d-flex align-items-center';
+
+        const viewLink = document.createElement('a');
+        viewLink.href = '/calendar/';
+        viewLink.className = 'btn btn-sm btn-primary mr-2';
+        viewLink.textContent = 'View on calendar';
+        actions.appendChild(viewLink);
+
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button';
+        dismiss.className = 'btn btn-sm btn-outline-secondary';
+        dismiss.textContent = 'Dismiss';
+        dismiss.addEventListener('click', () => {
+            sessionStorage.setItem(UPCOMING_DISMISS_KEY, String(event.id));
+            wrapper.remove();
+        });
+        actions.appendChild(dismiss);
+
+        wrapper.appendChild(actions);
+
+        document.body.appendChild(wrapper);
+    }
+
+    function filterUpcomingEvents(events) {
+        const now = new Date();
+        const soon = new Date(now.getTime() + UPCOMING_WINDOW_HOURS * 60 * 60 * 1000);
+        return events
+            .map((evt) => ({ ...evt, start: new Date(evt.start_time) }))
+            .filter((evt) => evt.start instanceof Date && !Number.isNaN(evt.start) && evt.start > now && evt.start <= soon)
+            .sort((a, b) => a.start - b.start);
+    }
+
+    async function maybeShowUpcomingEvent(authState) {
+        if (!authState.authenticated) {
+            return;
+        }
+
+        try {
+            const response = await apiFetch(`${EVENTS_ENDPOINT}?rsvp=going`);
+            if (!response.ok) {
+                return;
+            }
+            const payload = await response.json();
+            const events = Array.isArray(payload) ? payload : payload.results || [];
+            const upcoming = filterUpcomingEvents(events);
+            if (!upcoming.length) {
+                return;
+            }
+            const event = upcoming[0];
+            if (sessionStorage.getItem(UPCOMING_DISMISS_KEY) === String(event.id)) {
+                return;
+            }
+            buildUpcomingEventBanner(event);
+        } catch (error) {
+            console.error('Unable to check upcoming events', error);
+        }
+    }
+
     // Make showEventDetailsModal globally accessible for calendar.html
     window.showEventDetailsModal = function(event, options = {}) {
            const isCalendarView = options.isCalendarView || false;
@@ -1620,5 +1704,6 @@
         initSettingsFormWarning();
         initThemeToggle();
         loadEventManagement();
+        maybeShowUpcomingEvent(authState);
     });
 })();
